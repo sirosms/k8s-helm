@@ -1,0 +1,254 @@
+## Default values for jenkins.
+
+app: jenkins
+
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+image:
+  repository: devops-cafumkmm.scr.skr-west.scp-in.com/jenkins/jenkins
+  tag: 2.375.2-jdk11
+  # repository: sscr.comm.scp-in.com/devops-service/jenkins-master
+  # tag: v1.20220310
+  pullPolicy: IfNotPresent
+imagePullSecrets:
+  - name: devops-docker-credential
+
+ports:
+  - name: http
+    containerPort: 8080
+    protocol: TCP
+  - name: tcp-slave
+    containerPort: 50000
+    protocol: TCP
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+  readSecrets: false
+#  roleBindingKind: RoleBinding
+#  roleRef:
+#    kind: ClusterRole
+#    name: cluster-admin
+
+service:
+  enabled: true
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/"
+  type: ClusterIP
+  ports: 
+    - name: http
+      port: 8080
+      targetPort: http      
+      protocol: TCP
+    - name: tcp-slave
+      port: 50000
+      targetPort: tcp-slave
+      protocol: TCP
+
+nodePort:
+  enabled: false
+  ports:
+  # - port: 50000
+  #   targetPort: tcp-slave
+  #   protocol: TCP
+  #   nodePort: 
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: 0m
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  host: jenkins-dev.samsungena.io
+  path: /
+  servicePort: 8080
+  tls:
+    enabled: true
+    secretName: samsungena.io-tls
+
+networkPolicy:
+  enabled: false
+
+hostAliases:
+# - ip: 70.100.100.100
+#   hostnames:
+#     - devops.cluster.io
+
+readinessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /login?from=
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 60
+  failureThreshold: 3
+  timeoutSeconds: 1
+  successThreshold: 1
+
+livenessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /login?from=
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 60
+  failureThreshold: 3
+  timeoutSeconds: 1
+  successThreshold: 1
+
+resources:
+  requests:
+    cpu: 2
+    memory: 4Gi
+  limits:
+    cpu: 4
+    memory: 8Gi
+
+nodeSelector:
+# kubernetes.io/nodetype: app
+
+persistence:
+  enabled: true
+  mounts:
+    - name: home
+      mountPath: /var/jenkins_home
+      existingClaim: jenkins-home
+
+certs:
+  import: false
+  configMapName: devops-import-certs
+
+env:
+  open:
+    TZ: Asia/Seoul
+    JAVA_OPTS: "-Xms1G -Xmx4G -Dhudson.slaves.NodeProvisioner.initialDelay=0 -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85"
+#   JENKINS_OPTS: "--prefix=/jenkins"
+    TRY_UPGRADE_IF_NO_MARKER: true
+    JENKINS_SLAVE_AGENT_PORT: 50000
+  
+addVolumeMounts:
+  - volumeName: config
+    mountPath: /usr/local/bin/configure-master
+    subPath: configure-master
+  - volumeName: config
+    mountPath: /usr/share/jenkins/ref/init.groovy.d/init.groovy.override
+    subPath: init.groovy.override
+  - volumeName: config
+    mountPath: /usr/share/jenkins/ref/jenkins.model.JenkinsLocationConfiguration.xml
+    subPath: jenkins.model.JenkinsLocationConfiguration.xml
+  - volumeName: config
+    mountPath: /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+    subPath: jenkins.install.UpgradeWizard.state
+  - volumeName: config
+    mountPath: /usr/share/jenkins/ref/config.xml
+    subPath: config.xml    
+
+configMap:
+  configure-master: |-
+    #--------------------
+    # Cert
+    #--------------------
+    if [ -d "/mnt/certs" ]; then
+        cp /mnt/certs/*.crt /usr/local/share/ca-certificates/
+        /usr/sbin/update-ca-certificates
+    
+        CERTOUTPUT="$(ls /mnt/certs/ | grep .crt)"
+        crts=$(echo $CERTOUTPUT | tr " " "\n")
+    
+        for crt in $crts
+        do
+            echo $crt
+            keytool -importcert -alias $crt -file /mnt/certs/$crt -cacerts -storepass "changeit" -noprompt
+        done
+    fi
+  init.groovy.override: |-
+    import jenkins.security.s2m.AdminWhitelistRule
+    import jenkins.model.Jenkins
+  
+    // SECURITY-786 change user id to include dot(.) char // default : /^[\w-]+$
+    hudson.security.HudsonPrivateSecurityRealm.ID_REGEX=/^[\w-\.\@\_]+$/
+  
+    // start quiet mode, that doesn't do any build.( cancel : /cancelQuietDown )
+    //jenkins.model.Jenkins.instance.doQuietDown();
+  
+    // slave connection
+    jenkins.slaves.DefaultJnlpSlaveReceiver.disableStrictVerification=true
+  
+    // slave to master access control
+    Jenkins.instance.getInjector().getInstance(AdminWhitelistRule.class).setMasterKillSwitch(false)
+  jenkins.model.JenkinsLocationConfiguration.xml: |-
+    <?xml version='1.1' encoding='UTF-8'?>
+    <jenkins.model.JenkinsLocationConfiguration>
+    <!-- Edit admin email -->
+      <adminAddress>myeongs.seo@partner.samsung.com</adminAddress>
+    <!--//Edit admin email -->
+    <!-- Edit jenkins url -->
+      <jenkinsUrl>https://jenkins-dev.samsungena.io</jenkinsUrl>
+    <!--//Edit jenkins url -->  
+    </jenkins.model.JenkinsLocationConfiguration>
+  jenkins.install.UpgradeWizard.state: |-
+    2.319.3
+  config.xml: |-
+    <?xml version='1.1' encoding='UTF-8'?>
+    <hudson>
+      <disabledAdministrativeMonitors>
+        <string>jenkins.security.apitoken.ApiTokenPropertyDisabledDefaultAdministrativeMonitor</string>
+        <string>jenkins.security.apitoken.ApiTokenPropertyEnabledNewLegacyAdministrativeMonitor</string>
+        <string>jenkins.security.csrf.CSRFAdministrativeMonitor</string>
+        <string>hudson.diagnosis.ReverseProxySetupMonitor</string>
+        <string>jenkins.diagnostics.SecurityIsOffMonitor</string>
+        <string>jenkins.security.QueueItemAuthenticatorMonitor</string>
+      </disabledAdministrativeMonitors>
+      <version>2.319.3</version>
+      <installStateName>RESTART</installStateName>
+      <numExecutors>0</numExecutors>
+      <mode>NORMAL</mode>
+      <useSecurity>true</useSecurity>
+      <authorizationStrategy class="hudson.security.ProjectMatrixAuthorizationStrategy">
+    <!-- Edit admin -->
+        <permission>hudson.model.Hudson.Administer:myeongs.seo@partner.samsung.com</permission>
+        <permission>hudson.model.Hudson.Read:authenticated</permission>
+      </authorizationStrategy>
+    <!--//Edit admin -->
+      <securityRealm class="hudson.security.HudsonPrivateSecurityRealm">
+        <disableSignup>false</disableSignup>
+        <enableCaptcha>false</enableCaptcha>
+      </securityRealm>
+      <disableRememberMe>false</disableRememberMe>
+      <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
+      <workspaceDir>${JENKINS_HOME}/workspace/${ITEM_FULLNAME}</workspaceDir>
+      <buildsDir>${ITEM_ROOTDIR}/builds</buildsDir>
+      <markupFormatter class="hudson.markup.EscapedMarkupFormatter"/>
+      <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+      <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+      <quietPeriod>5</quietPeriod>
+      <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
+      <views>
+        <hudson.model.AllView>
+          <owner class="hudson" reference="../../.."/>
+          <name>all</name>
+          <filterExecutors>false</filterExecutors>
+          <filterQueue>false</filterQueue>
+          <properties class="hudson.model.View$PropertyList"/>
+        </hudson.model.AllView>
+      </views>
+      <primaryView>all</primaryView>
+      <slaveAgentPort>50000</slaveAgentPort>
+      <label></label>
+      <nodeProperties/>
+      <globalNodeProperties/>
+      <noUsageStatistics>true</noUsageStatistics>
+      <crumbIssuer class="hudson.security.csrf.DefaultCrumbIssuer">
+        <excludeClientIPFromCrumb>true</excludeClientIPFromCrumb>
+      </crumbIssuer>
+    </hudson>

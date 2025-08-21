@@ -28,17 +28,6 @@ global:
     labels: {}
 
   image: {}
-    # Registry value override is only available for the following Charts:
-    # - Spamcheck
-    # - Mailroom
-    # If specifying a value here, be sure to also configure
-    # `gitlab.<subchart>.image.repository` to a value that does not
-    # include the default registry domain `registry.gitlab.com`.
-    # Support for other charts is coming as an iterative rollout.
-    # See https://gitlab.com/gitlab-org/charts/gitlab/-/issues/2859
-    # for more information.
-    # registry:
-
     # pullPolicy: IfNotPresent
     # pullSecrets: []
     # tagSuffix: ""
@@ -51,7 +40,7 @@ global:
   edition: ee
 
   ## https://docs.gitlab.com/charts/charts/globals#gitlab-version
-  gitlabVersion: "16.11.5"
+  # gitlabVersion:
 
   ## https://docs.gitlab.com/charts/charts/globals#application-resource
   application:
@@ -63,7 +52,7 @@ global:
     domain: example.com
     hostSuffix:
     https: true
-    externalIP: 192.168.0.11
+    externalIP:
     ssh: ~
     gitlab: {}
     minio: {}
@@ -77,7 +66,6 @@ global:
   ingress:
     apiVersion: ""
     configureCertmanager: true
-    useNewIngressForCerts: false
     provider: nginx
     # class:
     annotations: {}
@@ -92,10 +80,6 @@ global:
   hpa:
     apiVersion: ""
 
-  # Enable KEDA globally (https://keda.sh/)
-  keda:
-    enabled: false
-
   # Override the API version to use for PodDisruptionBudget
   pdb:
     apiVersion: ""
@@ -104,10 +88,6 @@ global:
   batch:
     cronJob:
       apiVersion: ""
-
-  # Override enablement of ServiceMonitor and PodMonitor objects.
-  monitoring:
-    enabled: false
 
   gitlab:
     ## Enterprise license for this GitLab installation
@@ -144,32 +124,15 @@ global:
     # applicationName:
     # preparedStatements: false
     # databaseTasks: true
-    main: {}
-      # host: postgresql.hostedsomewhere.else
-      # port: 123
-      # username: gitlab
-      # database: gitlabhq_production
-      # applicationName:
-      # preparedStatements: false
-      # databaseTasks: true
-    ci: {}
-      # host: postgresql.hostedsomewhere.else
-      # port: 123
-      # username: gitlab
-      # database: gitlabhq_production_ci
-      # applicationName:
-      # preparedStatements: false
-      # databaseTasks: false
 
   ## https://docs.gitlab.com/charts/charts/globals#configure-redis-settings
   redis:
-    auth:
+    password:
       enabled: true
       # secret:
       # key:
     # host: redis.hostedsomewhere.else
     # port: 6379
-    # user: webservice
     # sentinels:
     #   - host:
     #     port:
@@ -228,6 +191,10 @@ global:
     credentials: {}
       # secret:
 
+  ## https://docs.gitlab.com/charts/charts/globals#configure-grafana-integration
+  grafana:
+    enabled: false
+
   ## https://docs.gitlab.com/charts/charts/globals#configure-appconfig-settings
   ## Rails based portions of this chart share many settings
   appConfig:
@@ -237,6 +204,7 @@ global:
     enableSeatLink: true
     enableImpersonation:
     applicationSettingsCacheSeconds: 60
+    defaultCanCreateGroup: true
     usernameChangingEnabled: true
     issueClosingPattern:
     defaultTheme:
@@ -246,7 +214,6 @@ global:
       wiki: true
       snippets: true
       builds: true
-    graphQlTimeout:
     webhookTimeout:
     maxRequestDurationSeconds:
 
@@ -281,9 +248,6 @@ global:
       ## Periodically update ci_runner_versions table with up-to-date versions and status
       # ci_runner_versions_reconciliation_worker:
       #   cron: "@daily"
-      ## Periodically clean up stale ci_runner_machines records
-      # ci_runners_stale_machines_cleanup_worker:
-      #   cron: "36 * * * *"
       ### GitLab Geo
       # Geo Primary only!
       # geo_prune_event_log_worker:
@@ -470,14 +434,6 @@ global:
       servers: {}
       ## See documentation for complete example of a configured LDAP server
 
-    duoAuth:
-      enabled: false
-      # hostname:
-      # integrationKey:
-      # secretKey:
-      #   secret:
-      #   key:
-
     ## https://docs.gitlab.com/charts/charts/globals#kas-settings
     gitlab_kas: {}
       # secret:
@@ -564,7 +520,6 @@ global:
     ## Geo Secondary only
     # nodeName allows multiple instances behind a load balancer.
     nodeName: # defaults to `gitlab.gitlab.host`
-    # ingressClass:
     # PostgreSQL connection details only needed for `secondary`
     psql:
       password: {}
@@ -625,7 +580,6 @@ global:
   ## https://docs.gitlab.com/charts/charts/globals#configure-registry-settings
   registry:
     bucket: registry
-
     certificate: {}
       # secret:
     httpSecret: {}
@@ -656,16 +610,6 @@ global:
       #         secret: gitlab-registry-specific-password
       #         key: password
       # events: {}
-
-    # Settings utilized by other services referencing registry:
-    enabled: true
-    host:
-    # port: 443
-    api:
-      protocol: http
-      serviceName: registry
-      port: 5000
-    tokenIssuer: gitlab-issuer
 
   pages:
     enabled: false
@@ -716,8 +660,6 @@ global:
     authentication: "plain"
     starttls_auto: false
     openssl_verify_mode: "peer"
-    open_timeout: 30
-    read_timeout: 60
     pool: false
 
   ## https://docs.gitlab.com/charts/charts/globals#outgoing-email
@@ -775,9 +717,12 @@ global:
   # configuration of certificates container & custom CA injection
   certificates:
     image:
-      repository: registry.gitlab.com/gitlab-org/build/cng/certificates
-      # Default tag is `global.gitlabVersion` or `master` if the former one is undefined.
-      # tag: master
+      repository: registry.gitlab.com/gitlab-org/build/cng/alpine-certificates
+      # The digest below comes from a given tag pipeline because they are mirrored to .com,
+      # ensuring that the image tag is available from both instances. The digest can be
+      # found in the 'sync_images' job.
+      #   https://dev.gitlab.org/gitlab/charts/components/images/-/tags
+      tag: 20191127-r2@sha256:367d437d024d7647432d67fb2442e3e5723af5930bad77d3535f4f8f4f8630d9
       # pullPolicy: IfNotPresent
       # pullSecrets: []
     customCAs: []
@@ -795,20 +740,21 @@ global:
   kubectl:
     image:
       repository: registry.gitlab.com/gitlab-org/build/cng/kubectl
-      # Default tag is `global.gitlabVersion` or `master` if the former one is undefined.
-      # tag: master
+      # The digest below comes from a given tag pipeline because they are mirrored to .com,
+      # ensuring that the image tag is available from both instances. The digest can be
+      # found in the 'sync_images' job.
+      #   https://dev.gitlab.org/gitlab/charts/components/images/-/tags
+      tag: 1.24.7@sha256:4be8ed0fb89c29c5bacf0dcedee803e1ac1298da9a45186eb5a391c2353c6bf6
       # pullPolicy: IfNotPresent
       # pullSecrets: []
     securityContext:
       # in most base images, this is `nobody:nogroup`
       runAsUser: 65534
       fsGroup: 65534
-  gitlabBase:
+  busybox:
     image:
-      repository: registry.gitlab.com/gitlab-org/build/cng/gitlab-base
-      # Default tag is `global.gitlabVersion` or `master` if the former one is undefined.
-      # Charts using this image as init container support further overrides with `init.image.tag`.
-      # tag: master
+      repository: registry.gitlab.com/gitlab-org/cloud-native/mirror/images/busybox
+      tag: latest
       # pullPolicy: IfNotPresent
       # pullSecrets: []
 
@@ -825,12 +771,6 @@ global:
     connection:
       string: ""
     urlTemplate: ""
-
-  zoekt:
-    gateway:
-      basicAuth: {}
-    indexer:
-      internalApi: {}
 
   ## https://docs.gitlab.com/charts/charts/globals
   extraEnv: {}
@@ -856,10 +796,6 @@ global:
   #       name: useful-config
   #       key: some-string
   #       # optional: boolean
-
-  ## https://docs.gitlab.com/charts/charts/globals/#jobs
-  job:
-    nameSuffixOverride:
 ## End of global
 
 upgradeCheck:
@@ -875,18 +811,16 @@ upgradeCheck:
     fsGroup: 65534
   tolerations: []
   annotations: {}
-  configMapAnnotations: {}
   resources:
     requests:
       cpu: 50m
   priorityClassName: ""
 
 ## Settings to for the Let's Encrypt ACME Issuer
-certmanager-issuer:
+# certmanager-issuer:
 #   # The email address to register certificates requested from Let's Encrypt.
 #   # Required if using Let's Encrypt.
-  email: sirosms@gmail.com
-
+#   email: email@example.com
 
 ## Installation & configuration of jetstack/cert-manager
 ## See requirements.yaml for current version
@@ -895,7 +829,7 @@ certmanager:
   nameOverride: certmanager
   # Install cert-manager chart. Set to false if you already have cert-manager
   # installed or if you are not using cert-manager.
-  install: false
+  install: true
   # Other cert-manager configurations from upstream
   # See https://github.com/jetstack/cert-manager/blob/master/deploy/charts/cert-manager/README#configuration
   rbac:
@@ -904,13 +838,13 @@ certmanager:
 ## https://docs.gitlab.com/charts/charts/nginx/
 ## https://docs.gitlab.com/charts/architecture/decisions#nginx-ingress
 ## Installation & configuration of charts/ingress-nginx:
-nginx-ingress: &nginx-ingress
+nginx-ingress:
   enabled: true
   tcpExternalConfig: "true"
-  controller: &nginx-ingress-controller
+  controller:
     addHeaders:
       Referrer-Policy: strict-origin-when-cross-origin
-    config: &nginx-ingress-controller-config
+    config:
       annotation-value-word-blocklist: "load_module,lua_package,_by_lua,location,root,proxy_pass,serviceaccount,{,},',\""
       hsts: "true"
       hsts-include-subdomains: "false"
@@ -920,17 +854,11 @@ nginx-ingress: &nginx-ingress
       ssl-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4"
       ssl-protocols: "TLSv1.3 TLSv1.2"
       server-tokens: "false"
-      # Configure smaller defaults for upstream-keepalive-*, see https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration
-      upstream-keepalive-connections: 100 # Limit of 100 held-open connections
-      upstream-keepalive-time:        30s # 30 second limit for connection reuse
-      upstream-keepalive-timeout:       5 # 5 second timeout to hold open idle connections
-      upstream-keepalive-requests:   1000 # 1000 requests per connection, before recycling
-
     service:
       externalTrafficPolicy: "Local"
     ingressClassByName: false
     ingressClassResource:
-      name: '{{ include "ingress.class.name" $ | quote }}'
+      name: '{{ include "ingress.class.name" $ }}'
     resources:
       requests:
         cpu: 100m
@@ -965,44 +893,10 @@ nginx-ingress: &nginx-ingress
   serviceAccount:
     create: true
 
-# Ingress controller to handle requests forwarded from other Geo sites.
-# Configuration differences compared to the main nginx ingress:
-#   - Pass X-Forwarded-For headers as is
-#   - Use a different IngressClass name
-nginx-ingress-geo:
-  <<: *nginx-ingress
-  enabled: false
-  controller:
-    <<: *nginx-ingress-controller
-    config:
-      <<: *nginx-ingress-controller-config
-      # Pass incoming X-Forwarded-* headers to upstream. Required to handle requests
-      # from other Geo sites.
-      # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#use-forwarded-headers
-      use-forwarded-headers: true
-    electionID: ingress-controller-leader-geo
-    ingressClassResource:
-      name: '{{ include "gitlab.geo.ingress.class.name" $ | quote }}'
-      controllerValue: 'k8s.io/nginx-ingress-geo'
-  # A pre-defined/static external IP can be configured with global.hosts.externalGeoIP.
-  externalIpTpl: '{{ .Values.global.hosts.externalGeoIP }}'
-
-haproxy:
-  install: false
-  controller:
-    service:
-      type: LoadBalancer
-      tcpPorts:
-        - name: ssh
-          port: 22
-          targetPort: 22
-    extraArgs:
-      - --configmap-tcp-services=$(POD_NAMESPACE)/$(POD_NAMESPACE)-haproxy-tcp
-
 ## Installation & configuration of stable/prometheus
 ## See requirements.yaml for current version
 prometheus:
-  install: false
+  install: true
   rbac:
     create: true
   alertmanager:
@@ -1019,8 +913,7 @@ prometheus:
     retention: 15d
     strategy:
       type: Recreate
-    image:
-      tag: v2.38.0
+  #
   serverFiles:
     prometheus.yml:
       scrape_configs:
@@ -1150,11 +1043,9 @@ prometheus:
 ## https://docs.gitlab.com/charts/installation/deployment.html#redis
 redis:
   install: true
-  auth:
-    existingSecret: gitlab-redis-secret
-    existingSecretKey: redis-password
-    usePasswordFiles: true
-  architecture: standalone
+  existingSecret: gitlab-redis-secret
+  existingSecretKey: redis-password
+  usePasswordFile: true
   cluster:
     enabled: false
   metrics:
@@ -1163,23 +1054,17 @@ redis:
 ## Installation & configuration of stable/prostgresql
 ## See requirements.yaml for current version
 postgresql:
+  postgresqlUsername: gitlab
+  # This just needs to be set. It will use a second entry in existingSecret for postgresql-postgres-password
+  postgresqlPostgresPassword: bogus
   install: true
-  auth:
-    ## These need to be set, for the sake of bitnami/postgresql upgrade patterns.
-    ## They are overridden by use of `existingSecret`
-    password: bogus-satisfy-upgrade
-    postgresPassword: bogus-satisfy-upgrade
-    ##
-    usePasswordFiles: false
-    existingSecret: '{{ include "gitlab.psql.password.secret" . }}'
-    secretKeys:
-      adminPasswordKey: postgresql-postgres-password
-      userPasswordKey: '{{ include "gitlab.psql.password.key" $ }}'
+  postgresqlDatabase: gitlabhq_production
   image:
-    tag: 16.6.0
-  primary:
-    initdb:
-      scriptsConfigMap: '{{ include "gitlab.psql.initdbscripts" $}}'
+    tag: 12.7.0
+  usePasswordFile: true
+  existingSecret: bogus
+  initdbScriptsConfigMap: bogus
+  master:
     extraVolumeMounts:
       - name: custom-init-scripts
         mountPath: /docker-entrypoint-preinitdb.d/init_revision.sh
@@ -1188,13 +1073,6 @@ postgresql:
       postgresql.gitlab/init-revision: "1"
   metrics:
     enabled: true
-    service:
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9187"
-        gitlab.com/prometheus_scrape: "true"
-        gitlab.com/prometheus_port: "9187"
-
     ## Optionally define additional custom metrics
     ## ref: https://github.com/wrouesnel/postgres_exporter#adding-new-metrics-via-a-config-file
 
@@ -1216,8 +1094,11 @@ shared-secrets:
       # pullPolicy: IfNotPresent
       # pullSecrets: []
       repository: registry.gitlab.com/gitlab-org/build/cng/cfssl-self-sign
-      # Default tag is `master`, overridable by `global.gitlabVersion`.
-      # tag: master
+      # The digest below comes from a given tag pipeline because they are mirrored to .com,
+      # ensuring that the image tag is available from both instances. The digest can be
+      # found in the 'sync_images' job.
+      #   https://dev.gitlab.org/gitlab/charts/components/images/-/tags
+      tag: 1.6.1@sha256:e89392e13b4ef12cd48ba8c30326aacd89a8d0161cb081ac8dfbb77200d5ebac
     keyAlgorithm: "rsa"
     keySize: "4096"
     expiry: "3650d"
@@ -1241,18 +1122,15 @@ shared-secrets:
 ## Installation & configuration of gitlab/gitlab-runner
 ## See requirements.yaml for current version
 gitlab-runner:
-  install: false
+  install: true
   rbac:
     create: true
   runners:
     locked: false
-    # Set secret to an arbitrary value because the runner chart renders the gitlab-runner.secret template only if it is not empty.
-    # The parent/GitLab chart overrides the template to render the actual secret name.
-    secret: "nonempty"
     config: |
       [[runners]]
         [runners.kubernetes]
-        image = "ubuntu:22.04"
+        image = "ubuntu:18.04"
         {{- if .Values.global.minio.enabled }}
         [runners.cache]
           Type = "s3"
@@ -1268,13 +1146,56 @@ gitlab-runner:
     gitlab.com/prometheus_scrape: "true"
     gitlab.com/prometheus_port: 9252
 
-traefik:
-  install: false
-  ports:
-    gitlab-shell:
-      expose: true
-      port: 2222
-      exposedPort: 22
+## Installation & configuration of stable/grafana
+## See requirements.yaml for current version
+## Controlled by `global.grafana.enabled`
+grafana:
+  # Overrides the Grafana image tag for the 7.5.16 security update
+  image:
+    tag: 7.5.16
+  ## Override and provide "bogus" administation secrets
+  ## gitlab/gitlab-grafana provides overrides via shared-secrets
+  nameOverride: grafana-app
+  admin:
+    existingSecret: bogus
+  env:
+    GF_SECURITY_ADMIN_USER: bogus
+    GF_SECURITY_ADMIN_PASSWORD: bogus
+  ## This override allows gitlab/gitlab-grafana to completely override the secret
+  ##   handling behavior of the upstream chart in combination with the above.
+  command: ["sh", "-x", "/tmp/scripts/import-secret.sh"]
+  ## The following settings allow Grafana to dynamically create
+  ## dashboards and datasources from configmaps. See
+  ## https://artifacthub.io/packages/helm/grafana/grafana#sidecar-for-dashboards
+  sidecar:
+    dashboards:
+      enabled: true
+      label: gitlab_grafana_dashboard
+    datasources:
+      enabled: true
+      label: gitlab_grafana_datasource
+  ## We host Grafana as a sub-url of GitLab
+  grafana.ini:
+    server:
+      serve_from_sub_path: true
+      root_url: http://localhost/-/grafana/
+    auth:
+      login_cookie_name: gitlab_grafana_session
+  ## We generate and provide random passwords
+  ## NOTE: the Secret & ConfigMap names are hard coded!
+  extraSecretMounts:
+    - name: initial-password
+      mountPath: /tmp/initial
+      readOnly: true
+      secretName: gitlab-grafana-initial-password
+      defaultMode: 400
+  extraConfigmapMounts:
+    - name: import-secret
+      mountPath: /tmp/scripts
+      configMap: gitlab-grafana-import-secret
+      readOnly: true
+  testFramework:
+    enabled: false
 
 ## Settings for individual sub-charts under GitLab
 ## Note: Many of these settings are configurable via globals
@@ -1299,6 +1220,8 @@ gitlab:
   ## https://docs.gitlab.com/charts/charts/gitlab/gitlab-shell
   #   gitlab-shell:
   #     enabled: false
+  ## https://docs.gitlab.com/charts/charts/gitlab/gitlab-grafana
+  #   gitlab-grafana:
   ## https://docs.gitlab.com/charts/charts/gitlab/gitlab-pages
   #   gitlab-pages:
   ## https://docs.gitlab.com/charts/charts/gitlab/kas
@@ -1306,16 +1229,3 @@ gitlab:
   ## https://docs.gitlab.com/charts/charts/gitlab/praefect
   #   praefect:
 
-## Installation & configuration of gitlab/gitlab-zoekt
-gitlab-zoekt:
-  install: false
-  gateway:
-    basicAuth:
-      enabled: true
-      secretName: '{{ include "gitlab.zoekt.gateway.basicAuth.secretName" $ }}'
-  indexer:
-    internalApi:
-      enabled: true
-      secretName: '{{ include "gitlab.zoekt.indexer.internalApi.secretName" $ }}'
-      secretKey: '{{ include "gitlab.zoekt.indexer.internalApi.secretKey" $ }}'
-      gitlabUrl: '{{ include "gitlab.zoekt.indexer.internalApi.gitlabUrl" $ }}'

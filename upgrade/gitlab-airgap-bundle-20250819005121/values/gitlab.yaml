@@ -1,0 +1,223 @@
+## Default values for gitlab.
+global:
+  app: gitlab
+
+  replicaCount: 1
+
+  strategy:
+    type: Recreate
+
+  image:
+    repository: devops-cafumkmm.scr.skr-west.scp-in.com/gitlab/gitlab-webservice-ce
+    tag: 15.8.0
+  # tag: 14.7.7-ce.0
+    pullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: devops-docker-credential
+
+  # busybox
+  busybox:
+    image:
+      repository: devops-cafumkmm.scr.skr-west.scp-in.com/scrtest/busybox
+      tag: latest
+    imagePullSecrets:
+      - name: devops-docker-credential
+  # kubectl
+  kubectl:
+    image:
+      repository: devops-cafumkmm.scr.skr-west.scp-in.com/gitlab/kubectl
+      tag: 1.24.7
+    imagePullSecrets:
+      - name: devops-docker-credential
+
+  ports:
+    - name: https
+      containerPort: 443
+      protocol: TCP
+
+  service:
+    enabled: true
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "443"
+      prometheus.io/path: "/gitlab"
+    type: ClusterIP
+    ports:
+      - name: https
+        port: 443
+        targetPort: https
+        protocol: TCP
+
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/proxy-body-size: 0m
+      nginx.org/ssl-backends: gitlab
+      nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+      ingress.kubernetes.io/ssl-passthrough: "true"
+      nginx.ingress.kubernetes.io/secure-backends: "true"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    host: gitlab-dev.samsungena.io
+    path: /
+    servicePort: 443
+    tls:
+      enabled: true
+      secretName: samsungena.io-tls
+
+  networkPolicy:
+    enabled: false
+
+  hostAliases:
+  # - ip: 70.100.100.100
+  #   hostnames:
+  #     - devops.cluster.io
+
+  readinessProbe:
+    enabled: true
+    type: httpGet
+    httpGet:
+      path: /-/readiness
+      port: 443
+      scheme: HTTPS
+    initialDelaySeconds: 180
+    periodSeconds: 60
+    failureThreshold: 3
+    timeoutSeconds: 1
+    successThreshold: 1
+
+  livenessProbe:
+    enabled: true
+    type: httpGet
+    httpGet:
+      path: /-/liveness
+      port: 443
+      scheme: HTTPS
+    initialDelaySeconds: 180
+    periodSeconds: 60
+    failureThreshold: 3
+    timeoutSeconds: 1
+    successThreshold: 1
+
+  resources:
+    requests:
+      cpu: 2
+      memory: 8Gi
+    limits:
+      cpu: 4
+      memory: 16Gi
+
+  nodeSelector:
+  # kubernetes.io/nodetype: app
+
+  persistence:
+    - name: opt
+      mountPath: /var/opt/gitlab
+      existingClaim: gitlab-opt-dev
+    - name: etc
+      mountPath: /etc/gitlab
+      existingClaim: gitlab-etc-dev
+    - name: log
+      mountPath: /var/log/gitlab
+      existingClaim: gitlab-log-dev
+
+  env:
+    open:
+      TZ: Asia/Seoul
+      EXTERNAL_URL: https://gitlab-dev.samsungena.io # gitlab-dev.samsungena.io 로 변경
+      DB_HOST: 66.13.14.37
+      DB_PORT: 2866
+      DB_DATABASE: gitlab
+      DB_USERNAME: gitlab
+    config:
+      GITLAB_OMNIBUS_CONFIG: gitlab_omnibus_config
+    secret:
+      DB_PASSWORD: epqmdhqtm1@
+  # reflector 구현후
+  addVolumeMounts:
+    - volumeName: secret-tls
+      mountPath: /etc/gitlab/ssl/gitlab-dev.samsungena.io.crt
+      subPath: tls.crt
+    - volumeName: secret-tls
+      mountPath: /etc/gitlab/ssl/gitlab-dev.samsungena.io.key
+      subPath: tls.key
+
+  configMap:
+    ## https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template
+    gitlab_omnibus_config: |-
+      external_url ENV['EXTERNAL_URL'];
+      gitlab_rails['time_zone'] = ENV['TZ'];
+      ### GitLab user privileges
+      gitlab_rails['gitlab_default_can_create_group'] = false
+      # gitlab_rails['gitlab_username_changing_enabled'] = true
+      ### Default project feature settings
+      gitlab_rails['gitlab_default_projects_features_issues'] = false
+      gitlab_rails['gitlab_default_projects_features_merge_requests'] = true
+      gitlab_rails['gitlab_default_projects_features_wiki'] = false
+      gitlab_rails['gitlab_default_projects_features_snippets'] = false
+      gitlab_rails['gitlab_default_projects_features_builds'] = false
+      gitlab_rails['gitlab_default_projects_features_container_registry'] = false
+      ### Monitoring settings
+      gitlab_rails['monitoring_whitelist'] = ['0.0.0.0/0']
+      ### Job Artifacts
+      gitlab_rails['artifacts_enabled'] = false
+      ### Change the initial default admin password and shared runner registration tokens.
+      gitlab_rails['initial_root_password'] = 'Passw0rd!'
+      ### GitLab database settings
+      gitlab_rails['db_host'] = ENV['DB_HOST'];
+      gitlab_rails['db_port'] = ENV['DB_PORT'];
+      gitlab_rails['db_database'] = ENV['DB_DATABASE'];
+      gitlab_rails['db_username'] = ENV['DB_USERNAME'];
+      gitlab_rails['db_password'] = ENV['DB_PASSWORD'];
+      ### Settings used by GitLab application
+      gitlab_rails['registry_enabled'] = false
+      ### GitLab PostgreSQL
+      postgresql['enable'] = false
+      ### GitLab Redis
+      # redis['enable'] = true
+      ### Users and groups accounts
+      manage_accounts['enable'] = true
+      ### Prometheus
+      prometheus_monitoring['enable'] = false
+      ### Grafana Dashboards
+      grafana['enable'] = false
+      ### Package repository (EE Only)
+      gitlab_rails['packages_enabled'] = false
+      ### Dependency proxy (EE Only)
+      gitlab_rails['dependency_proxy_enabled'] = false
+      ### OmniAuth Settings(IDP)
+      gitlab_rails['omniauth_enabled'] = false
+      ### keycloak
+  #    gitlab_rails['omniauth_allow_single_sign_on'] = true
+  #    gitlab_rails['omniauth_sync_email_from_provider'] = 'openid_connect'
+  #    gitlab_rails['omniauth_sync_profile_from_provider'] = ['openid_connect']
+  #    gitlab_rails['omniauth_sync_profile_attributes'] = ['email']
+  #    gitlab_rails['omniauth_auto_sign_in_with_provider'] = 'openid_connect'
+  #    gitlab_rails['omniauth_block_auto_created_users'] = false
+  #    gitlab_rails['omniauth_auto_link_ldap_user'] = false
+  #    gitlab_rails['omniauth_auto_link_saml_user'] = false
+  #    gitlab_rails['omniauth_auto_link_user'] = ['openid_connect']
+  #    gitlab_rails['omniauth_external_providers'] = ['openid_connect']
+  #
+  #    gitlab_rails['omniauth_providers'] = [
+  #      {
+  #        name: "openid_connect",
+  #        label: "SCP", # optional label for login button, defaults to "Openid Connect"
+  #        #icon: "<custom_provider_icon>",
+  #        args: {
+  #          name: "openid_connect",
+  #          scope: ["openid","profile","email"],
+  #          response_type: "code",
+  #          issuer: "https://keycloak.secl.samsung.co.kr/realms/devops",
+  #          discovery: true,
+  #          client_auth_method: "query",
+  #          uid_field: "preferred_username",
+  #          send_scope_to_token_endpoint: "false",
+  #          client_options: {
+  #            identifier: "gitlab",
+  #            secret: "UQNsvlKtTRphlHMTg3jXdChghwvEDvon",
+  #            redirect_uri: "https://gitlab.secl.samsung.co.kr/users/auth/openid_connect/callback"
+  #          }
+  #        }
+  #      }
+  #    ]
