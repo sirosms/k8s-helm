@@ -1,0 +1,11 @@
+ docker.io/bitnami/postgres-exporter:0.8.0-debian-10-r99
+ docker.io/bitnami/postgresql:12.7.0
+ docker.io/bitnami/redis-exporter:1.12.1-debian-10-r11
+ docker.io/bitnami/redis:6.0.9-debian-10-r0
+ minio/mc:RELEASE.2018-07-13T00-53-22Z
+ minio/minio:RELEASE.2017-12-28T01-21-00Z
+ registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce:v15.8.0
+ registry.gitlab.com/gitlab-org/build/cng/kubectl:1.24.7
+ registry.gitlab.com/gitlab-org/cloud-native/mirror/images/busybox:latest
+ registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v15.7.2
+ registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v16.11.0

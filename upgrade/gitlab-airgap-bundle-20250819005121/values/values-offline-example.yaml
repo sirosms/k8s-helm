@@ -1,0 +1,235 @@
+# === GitLab 폐쇄망/내부 레지스트리 설정 (gitlab.yaml 기반) ===
+
+## GitLab 애플리케이션 설정
+app: gitlab
+
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+## GitLab 이미지 설정 (Docker Hub)
+image:
+  repository: sirosms/gitlab-webservice-ce
+  tag: "v15.8.0"
+  pullPolicy: IfNotPresent
+
+## 이미지 Pull Secret (내부 레지스트리용)
+imagePullSecrets:
+  - name: registry-local-credential  # 내부 레지스트리 인증용 Secret
+
+## 포트 설정
+ports:
+  - name: https
+    containerPort: 443
+    protocol: TCP
+
+## 서비스 설정
+service:
+  enabled: true
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "443"
+    prometheus.io/path: "/gitlab"
+  type: ClusterIP
+  ports:
+    - name: https
+      port: 443
+      targetPort: https
+      protocol: TCP
+
+## 인그레스 설정 (폐쇄망에서 사용 시 수정 필요)
+ingress:
+  enabled: false  # 폐쇄망에서는 기본적으로 비활성화
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: 0m
+    nginx.org/ssl-backends: gitlab
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/secure-backends: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  host: gitlab.local  # 실제 도메인으로 변경 필요
+  path: /
+  servicePort: 443
+  tls:
+    enabled: true
+    secretName: gitlab-tls
+
+## 네트워크 정책
+networkPolicy:
+  enabled: false
+
+## Host Aliases
+hostAliases: []
+# - ip: "10.0.0.1"
+#   hostnames:
+#     - "external-db.local"
+
+## Health Checks
+readinessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /-/readiness
+    port: 443
+    scheme: HTTPS
+  initialDelaySeconds: 180
+  periodSeconds: 60
+  failureThreshold: 3
+  timeoutSeconds: 1
+  successThreshold: 1
+
+livenessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /-/liveness
+    port: 443
+    scheme: HTTPS
+  initialDelaySeconds: 180
+  periodSeconds: 60
+  failureThreshold: 3
+  timeoutSeconds: 1
+  successThreshold: 1
+
+## 리소스 설정
+resources:
+  requests:
+    cpu: 1
+    memory: 4Gi
+  limits:
+    cpu: 2
+    memory: 8Gi
+
+## 노드 선택자
+nodeSelector: {}
+# kubernetes.io/nodetype: app
+
+## Persistent Volume 설정
+persistence:
+  - name: opt
+    mountPath: /var/opt/gitlab
+    existingClaim: gitlab-opt-dev  # PVC 이름을 환경에 맞게 수정
+  - name: etc
+    mountPath: /etc/gitlab
+    existingClaim: gitlab-etc-dev  # PVC 이름을 환경에 맞게 수정
+  - name: log
+    mountPath: /var/log/gitlab
+    existingClaim: gitlab-log-dev  # PVC 이름을 환경에 맞게 수정
+
+## 환경 변수 설정
+env:
+  open:
+    TZ: Asia/Seoul
+    EXTERNAL_URL: https://gitlab.local  # 실제 URL로 변경 필요
+    DB_HOST: postgres.local  # 외부 PostgreSQL 호스트
+    DB_PORT: 5432
+    DB_DATABASE: gitlab
+    DB_USERNAME: gitlab
+  config:
+    GITLAB_OMNIBUS_CONFIG: gitlab_omnibus_config
+  secret:
+    DB_PASSWORD: your_db_password  # 실제 패스워드로 변경 필요
+
+## SSL 인증서 마운트 (필요시)
+addVolumeMounts:
+  - volumeName: secret-tls
+    mountPath: /etc/gitlab/ssl/gitlab.local.crt  # 실제 도메인으로 변경
+    subPath: tls.crt
+  - volumeName: secret-tls
+    mountPath: /etc/gitlab/ssl/gitlab.local.key  # 실제 도메인으로 변경
+    subPath: tls.key
+
+## GitLab Omnibus 설정
+configMap:
+  gitlab_omnibus_config: |-
+    external_url ENV['EXTERNAL_URL'];
+    gitlab_rails['time_zone'] = ENV['TZ'];
+    
+    ### GitLab 사용자 권한 설정
+    gitlab_rails['gitlab_default_can_create_group'] = false
+    
+    ### 기본 프로젝트 기능 설정
+    gitlab_rails['gitlab_default_projects_features_issues'] = true
+    gitlab_rails['gitlab_default_projects_features_merge_requests'] = true
+    gitlab_rails['gitlab_default_projects_features_wiki'] = false
+    gitlab_rails['gitlab_default_projects_features_snippets'] = false
+    gitlab_rails['gitlab_default_projects_features_builds'] = true
+    gitlab_rails['gitlab_default_projects_features_container_registry'] = false
+    
+    ### 모니터링 설정
+    gitlab_rails['monitoring_whitelist'] = ['0.0.0.0/0']
+    
+    ### Job Artifacts 설정
+    gitlab_rails['artifacts_enabled'] = true
+    
+    ### 초기 root 패스워드 설정
+    gitlab_rails['initial_root_password'] = 'Passw0rd!'
+    
+    ### GitLab 데이터베이스 설정 (외부 PostgreSQL)
+    gitlab_rails['db_host'] = ENV['DB_HOST'];
+    gitlab_rails['db_port'] = ENV['DB_PORT'];
+    gitlab_rails['db_database'] = ENV['DB_DATABASE'];
+    gitlab_rails['db_username'] = ENV['DB_USERNAME'];
+    gitlab_rails['db_password'] = ENV['DB_PASSWORD'];
+    
+    ### GitLab 애플리케이션 설정
+    gitlab_rails['registry_enabled'] = false
+    
+    ### 내장 PostgreSQL 비활성화 (외부 DB 사용)
+    postgresql['enable'] = false
+    
+    ### Redis 설정 (내장 사용)
+    redis['enable'] = true
+    
+    ### 사용자 및 그룹 계정 관리
+    manage_accounts['enable'] = true
+    
+    ### 모니터링 도구 비활성화 (폐쇄망 환경)
+    prometheus_monitoring['enable'] = false
+    grafana['enable'] = false
+    
+    ### 패키지 리포지토리 설정 (EE만 해당)
+    gitlab_rails['packages_enabled'] = false
+    gitlab_rails['dependency_proxy_enabled'] = false
+    
+    ### OmniAuth 설정 (SSO)
+    gitlab_rails['omniauth_enabled'] = false
+
+## Global 레지스트리 설정 (모든 GitLab 컴포넌트에 적용)
+global:
+  image:
+    pullPolicy: IfNotPresent
+  
+  ## 외부 PostgreSQL 설정
+  psql:
+    host: postgresql.postgres.svc.cluster.local
+    port: 5432
+    database: gitlab
+    username: gitlab
+    password:
+      secret: gitlab-postgresql-password
+      key: postgresql-password
+  
+  ## kubectl 이미지 설정 (hooks에서 사용)
+  kubectl:
+    image:
+      repository: sirosms/kubectl
+      tag: "1.24.7"
+      pullPolicy: IfNotPresent
+  
+  ## busybox 이미지 설정 (init containers에서 사용)
+  busybox:
+    image:
+      repository: sirosms/busybox
+      tag: latest
+      pullPolicy: IfNotPresent
+  
+## GitLab Runner 설정 (별도 설치 시 사용)
+gitlab-runner:
+  enabled: false  # 별도 설치하는 경우 false
+  image:
+    registry: "registry.local:5000"
+    repository: "gitlab/gitlab-runner"
+    tag: "16.11.0"
