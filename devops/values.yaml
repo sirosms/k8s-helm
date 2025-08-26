@@ -1,0 +1,307 @@
+## Default values for devops.
+
+app: devops
+
+replicaCount: 1
+
+autoscale:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+image:
+  repository: sds.redii.net/sdspaas-cicd/busybox
+  tag: latest
+  pullPolicy: IfNotPresent
+imagePullSecrets:
+# - name: devops-docker-credential
+
+command:
+# - "command"
+args:
+# - "arg"
+
+ports:
+# - name: http-port
+#   containerPort: 8080
+#   protocol: TCP
+
+annotations:
+  deployment:
+  # key: value
+  pod:
+  # key: value
+
+serviceAccount:
+  create: false
+  ## create: true --> autogen (ignore name)
+  ## create: false --> use name
+  name: default
+
+rbac:
+  create: false
+  ## RoleBinding or ClusterRoleBinding
+  roleBindingKind: RoleBinding
+  roleRef:
+    ## Role or ClusterRole
+    kind: ClusterRole
+    name: cluster-admin
+
+podSecurityContext:
+# fsGroup: 2000
+
+securityContext:
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
+
+service:
+  enabled: false
+  annotations:
+  type: ClusterIP
+  ports:
+  # - name: http-port
+  #   port: 8080
+  #   targetPort: http-port
+  #   protocol: TCP
+
+nodePort:
+  enabled: false
+  ports:
+  # - port: 8080
+  #   targetPort: http-port
+  #   protocol: TCP
+  #   nodePort: 
+
+ingress:
+  enabled: false
+  annotations:
+  # kubernetes.io/ingress.class: nginx
+  # nginx.ingress.kubernetes.io/proxy-body-size: 0m
+  # nginx.ingress.kubernetes.io/affinity: cookie
+  # nginx.ingress.kubernetes.io/session-cookie-name: INGRESSCOOKIE-NAME
+  # kubernetes.io/tls-acme: "true"
+  # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  host: devops.cluster.io
+  path: "/"
+  pathType: Prefix
+  servicePort: 8080
+  addPaths:
+  # - path: "/path"
+  #   servicePort: 8081
+  addHosts:
+  # - app.sdspaas.io
+  tls:
+    enabled: false
+    ## create: true --> autogen (ignore secretName)
+    ## create: false --> use secretName
+    create: false
+    secretName: devops-tls
+    crt:
+  # crt: |-
+  #   -----BEGIN CERTIFICATE-----
+  #   MIIDcTCCAlkCFEF6yvGW9Sq5KtPnVCP8hlkLWrSBMA0GCSqGSIb3DQEBCwUAMHUx
+  #   CzAJBgNVBAYTAmtyMQ4wDAYDVQQIDAVrb3JlYTEOMAwGA1UEBwwFc2VvdWwxFDAS
+  #   BgNVBAoMC3NhbXN1bmcgc2RzMQ8wDQYDVQQLDAZkZXZvcHMxHzAdBgNVBAMMFiou
+  #   ZGV2b3Bzc3RnLnNkc3BhYXMuaW8wHhcNMjAwMzI1MDk0NjI5WhcNMzAwMzIzMDk0
+  #   NjI5WjB1MQswCQYDVQQGEwJrcjEOMAwGA1UECAwFa29yZWExDjAMBgNVBAcMBXNl
+  #   b3VsMRQwEgYDVQQKDAtzYW1zdW5nIHNkczEPMA0GA1UECwwGZGV2b3BzMR8wHQYD
+  #   VQQDDBYqLmRldm9wc3N0Zy5zZHNwYWFzLmlvMIIBIjANBgkqhkiG9w0BAQEFAAOC
+  #   AQ8AMIIBCgKCAQEA4nkae+NDc6nhvKlHz1fhLxBeCyayrIa6nTQaQncb6G219MDs
+  #   d0mAm255zWoisrRPt6A4oyj32ko+kBLr0JoLtwHaKT1WjUjn/ItnDS+NlxgZTmjd
+  #   9ekvzIDT+TqXXn1YeEClVeXQY6ck28Y1hcdwSYR8K4ZmivGTDrcoXH8tbvuPTw3n
+  #   Q0twzqKmxjCOFm48J2mFtdLRjwePEGKEer+YUcg73Xo5mxlkTUzVH6XAO0o+oA58
+  #   bOj1JOQbV4/JHnK4cO6+KH7Uol7Dec+Guwce+McY/p91RTqpbvVlSvk8Tp5DVgxw
+  #   QOuep7sMGeq7uc4jDdXdCkSbZOuIQ8/UmbqOKQIDAQABMA0GCSqGSIb3DQEBCwUA
+  #   A4IBAQAOJi6LfVyHvo2681wSThTTozHkaKxuQ7abBXsfBVhbvjqf1vlPo7zyBcWk
+  #   gIASO6CvNNsokIcV4zM0UzRjTjaNxD9lUgl9rB4W7wSZ9zjwjDk5lgtbxQiVxGiW
+  #   DVe2TvukoMtNgWmGoDzZ8zvdOD2v/xrB54xnhTYnyOgD3wCWXHy3XHyiZr7ncL0j
+  #   3sgjN7luQaBvfdIuS1azCK+EShrUfX0wCwiJvPwcb+dMLjVgndwxB9n8QCOpfW7M
+  #   EXmlBofcTpx/h60Pnr2AMvLxS9rtUQf0OF+7eDA7Fskt4nNF/hCiF327LM2AkqvJ
+  #   ThT8YxYKkyoE3jXswz0FHLVTQaHm
+  #   -----END CERTIFICATE-----
+    key:
+  # key: |-
+  #   -----BEGIN RSA PRIVATE KEY-----
+  #   MIIEogIBAAKCAQEA4nkae+NDc6nhvKlHz1fhLxBeCyayrIa6nTQaQncb6G219MDs
+  #   d0mAm255zWoisrRPt6A4oyj32ko+kBLr0JoLtwHaKT1WjUjn/ItnDS+NlxgZTmjd
+  #   9ekvzIDT+TqXXn1YeEClVeXQY6ck28Y1hcdwSYR8K4ZmivGTDrcoXH8tbvuPTw3n
+  #   Q0twzqKmxjCOFm48J2mFtdLRjwePEGKEer+YUcg73Xo5mxlkTUzVH6XAO0o+oA58
+  #   bOj1JOQbV4/JHnK4cO6+KH7Uol7Dec+Guwce+McY/p91RTqpbvVlSvk8Tp5DVgxw
+  #   QOuep7sMGeq7uc4jDdXdCkSbZOuIQ8/UmbqOKQIDAQABAoIBADto2XG2ZHNrFTSQ
+  #   k63ot8HI4WK7fBOWJE4o5NqatE98uEbEdUO1nG8pw/oG5aNLeb4J4dGrZZl18IOK
+  #   8yF9x6Tyb3ByDspxXan6R8ZFuzbvs3PGPrPLwCY9hV3T6PF4oESrcLPf3ZLGvfyJ
+  #   OnElqGcgwhII5817IcCye3wIQLrj9HNakS1w07VsEOEDUpKl428umG7FUKAMPGcQ
+  #   T8Z1WsH9dP3MebRaVQTgAB4nKaFHzVGHsMN8n1kjC4fe2CD2fxT+FTkl+CV3xMsb
+  #   362uSvKc34IHpJCITgdT9ISQ9Mb6xwY4oAGTM6fsavQ9O9GdGiX2fHMddTuK1tAx
+  #   rFDUdAECgYEA/HygFss+/QSME58TBnsLznu7laCL5RZS/iuml3T/PHyYiCSEBaj0
+  #   dslXxj/hXV/48qqcUW9PwQyKXtySUAt9sA9cTMdJ6zOJwwdvftXgNxP5bg1iCTxP
+  #   vPa+5qCIaPAftZlojp6uxCyVL0s4cg140pehSbhIG5snSFhM28d5XLkCgYEA5Z/Q
+  #   vWim0kggP88E78Cp7puRPAFMLJmhcI+6RoD4NddyTuTlpuOrhND03Vhzn12egryM
+  #   dd9/qyJwxuuHLoErHWoSeC5pbUDZ2ios4nd3yE/mS4oXFaqd/YKMFqln/YpWy6rG
+  #   z7txyUfNyULXNznXGs9NMs4WGxzLuDD0T91SZPECgYAuGZspTkbb776bvom8vy6y
+  #   rsjbUwr38xGIMvQh50zLAHzhLrmkRusL3UtXeUZuxB0yQZB1Ffvb5axGEcPtNYvn
+  #   X4acxi5q8WgP4gWrhOWBaPY779mckhSFDhBhD6KYdm9zuuTqVXLXgsRidDuEJ42N
+  #   9f2O9kTENZoAjY7K+irgkQKBgG/ypWLidYpJbaeONzrn9DEHGRxnCYso70MgX1Fm
+  #   KRyex/TctXXSw1lCQk7zg5Mrok7cu6Hv758wcEkapNIwWSPDBfQftHh2SH+LVkym
+  #   r/gxs/YaAb0nbFUe40tdFfzPCBfNT5YRLZ1S62n2s1QSV+OTM3DUdoSLWmqXO1UA
+  #   ct4RAoGARrqsVZteH4tq3jnblvt3E1TWE9NcBM5uM/AhqF2+pjnszrEjpG4SF/xw
+  #   WCmF57EgaDbY3Z43RlK6ovoFpqvIlIlJSRpoibWtkDL4KzACs/18MqfARyZ9CpTz
+  #   iY/xPemYt9AcAxQZNb53Dwej++/YEwhEMLDGhTlLO1QLE/eIrm8=
+  #   -----END RSA PRIVATE KEY-----
+
+networkPolicy:
+  enabled: false
+
+hostAliases:
+# - ip: 70.100.100.100
+#   hostnames:
+#     - devops.sdspaas.io
+
+readinessProbe:
+  enabled: false
+  type: httpGet
+  httpGet:
+    path: /
+    port: 8080
+    scheme: HTTP
+  exec:
+    command:
+  tcpSocket:
+    port:
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  failureThreshold: 3
+  timeoutSeconds: 1
+  successThreshold: 1
+livenessProbe:
+  enabled: false
+  type: httpGet
+  httpGet:
+    path: /
+    port: 8080
+    scheme: HTTP
+  exec: 
+    command:
+  tcpSocket:
+    port:
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  failureThreshold: 3
+  timeoutSeconds: 1
+  successThreshold: 1
+
+resources:
+# requests:
+#   cpu: 500m
+#   memory: 1Gi
+# limits:
+#   cpu: 1
+#   memory: 2Gi
+
+nodeSelector:
+# kubernetes.io/nodetype: app
+
+tolerations:
+
+affinity:
+
+certs:
+  import: false
+  ## create: true --> autogen (ignore configMapName)
+  ## create: false --> use configMapName
+  create: false
+  configMapName: devops-import-certs
+  crt:
+  # idp.crt: |-
+  #   -----BEGIN CERTIFICATE-----
+  #   MIID2DCCAsCgAwIBAgIJALdVRy6WlBJKMA0GCSqGSIb3DQEBCwUAMIGXMQswCQYD
+  #   VQQGEwJLUjEOMAwGA1UECBMFU2VvdWwxDjAMBgNVBAcTBVNlb3VsMRMwEQYDVQQK
+  #   EwpTYW1zdW5nU0RTMQwwCgYDVQQLEwNERVYxJDAiBgkqhkiG9w0BCQEWFWNtcG1h
+  #   c3RlckBzYW1zdW5nLmNvbTEfMB0GA1UEAxMWc3RhZ2UuY2xvdWRwbGF0Zm9ybS5p
+  #   bzAeFw0xOTA3MzAwNzI3NDhaFw0yMDA3MjkwNzI3NDhaMIGXMQswCQYDVQQGEwJL
+  #   UjEOMAwGA1UECBMFU2VvdWwxDjAMBgNVBAcTBVNlb3VsMRMwEQYDVQQKEwpTYW1z
+  #   dW5nU0RTMQwwCgYDVQQLEwNERVYxJDAiBgkqhkiG9w0BCQEWFWNtcG1hc3RlckBz
+  #   YW1zdW5nLmNvbTEfMB0GA1UEAxMWc3RhZ2UuY2xvdWRwbGF0Zm9ybS5pbzCCASIw
+  #   DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK/BkwDvDjc6dzZ2cEZPyb/bDXS+
+  #   arH80KDpNhiA5yB4aHTHNiJbjQFzwJMt8/tvq2ZNzNIEilokUwTLoKSKRync7Cen
+  #   wly1tbngXO6e284hckL7cWaCOpv+lZUT2FO2N5gpx1uAN9wDJy8dtjpXrWt8pSBA
+  #   2T6Jrex/O1HUTQtBsqgwYWJR/fJ+dbJfZIeWrvkwxdNnMt//j6/aFYTQJI6d79um
+  #   3hPBcgS+OS6tCbEjdygU4eLtzwWLaprOgBTZUEaNea4MMGPlPugKU/aGRLNFXf87
+  #   xJ73PTy5qRGZUtKs13VtzgTFXhiHdlCjYQ1tZl7OhOthLKGpFlUEsz8+pEMCAwEA
+  #   AaMlMCMwIQYDVR0RBBowGIIWc3RhZ2UuY2xvdWRwbGF0Zm9ybS5pbzANBgkqhkiG
+  #   9w0BAQsFAAOCAQEAlkLE3bmjiI3dr81mbKrg2P9UQIO4+vRCQ+lSV4QQ8wjM3Dc+
+  #   xBnEXLFrmVO7Vf6APLNMZGjTXhN+KxLuZ8k6izFANZ7MVdiiH3egaNP4M493rj4J
+  #   k0gs9ZhU/VKcmQzSWpXzE4BL1h09zXwp0t4FxxA+avPU77RVXcQy3dHlV3TXAbAG
+  #   ing0Twd0H9jnHE1qTQOFTUmJxCRvLxZG+p+21YrVDsvx8IkJmnWuqpQzNKO078lc
+  #   AEoptuIson9Y2sn1s2836VTXXh9WzGVJHqK7731VFgXbTf7yX83+V7W3yJ1gdtr6
+  #   n5P5fdO3VSQR7o3GrbwI2zEwxWI6DENAkvcCfw==
+  #   -----END CERTIFICATE-----
+
+persistence:
+## existingClaim(PVC)
+# - name: data
+#   mountPath: /data
+#   existingClaim: devops-data
+## EmptyDir
+# - name: agent
+#   mountPath: /app/agent
+
+env:
+  open:
+  # OPEN_ENV: open
+  config:
+  # CONFIG_ENV: config
+  secret:
+  # SECRET_ENV: secret
+
+initContainers:
+# - name: jmx-exporter
+#   image: sds.redii.net/devops-service/jmx-exporter:0.14.0
+#   volumeMounts:
+#     - mountPath: /app/agent
+#       name: agent
+#   command: ['/bin/sh', '-c', 'cp /usr/agent/* /app/agent/']
+  
+addContainers:
+# - name: nexus-exporter
+#   image: sds.redii.net/devops-cicd/nexus-exporter:0.2.2
+#   imagePullPolicy: IfNotPresent
+#   env:
+#     - name: NEXUS_USERNAME
+#       value: "admin"
+#     - name: NEXUS_ADMIN_PASSWORD
+#       value: "admin123"      
+#   resources:
+#     requests:
+#       cpu: 100m
+#       memory: 256Mi
+#     limits:
+#       cpu: 500m
+#       memory: 512Mi
+#   ports:
+#     - containerPort: 9184
+#       name: http-metrics
+
+## volumeMounts from configMap, secret
+## volumeName : [config, secret, secret-tls]
+addVolumeMounts:
+# - volumeName: config
+#   mountPath: /tmp/init.sh
+#   subPath: init.sh
+
+configMap:
+# init.sh: |-
+#   #!/bin/sh
+#
+#   ls -alhF

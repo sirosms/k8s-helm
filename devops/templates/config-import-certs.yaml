@@ -1,0 +1,10 @@
+{{- if and .Values.certs.import .Values.certs.create }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "app.certsConfigMapName" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.certs.crt | nindent 2 }}
+{{- end}}
