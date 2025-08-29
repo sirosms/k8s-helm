@@ -1,0 +1,102 @@
+# Nginx Ingress Controller Values for Samsung SDS Airgap Environment
+# Based on extracted config from devops-nginx-ingress namespace
+
+controller:
+  # Controller replica count (from extracted config)
+  replicaCount: 1  # Matching current deployment
+  
+  # Image configuration for Samsung SDS environment
+  image:
+    registry: sscr.comm.scp-in.com  # Samsung SDS registry
+    image: ingress-nginx/controller  # Updated path for v1.3.0
+    tag: "v1.3.0"
+    pullPolicy: IfNotPresent
+  
+  # Image pull secrets for Samsung SDS registry
+  imagePullSecrets:
+    - name: samsungena.io-secret  # Samsung SDS registry secret
+  
+  # Service configuration (matching extracted LoadBalancer setup)
+  service:
+    enabled: true
+    type: LoadBalancer  # Preserved from current environment
+    annotations:
+      # Add MetalLB annotation for on-premise LoadBalancer
+      metallb.universe.tf/allow-shared-ip: "nginx-ingress"
+    ports:
+      http: 80
+      https: 443
+    targetPorts:
+      http: http
+      https: https
+    
+  # Admission webhooks configuration - DISABLED for airgap environment
+  # (kube-webhook-certgen image not available in airgap bundle)
+  admissionWebhooks:
+    enabled: false  # Disable webhooks for simpler airgap deployment
+    # patch:
+    #   enabled: false
+    #   image:
+    #     registry: your-local-registry.com
+    #     image: ingress-nginx/kube-webhook-certgㅍen
+    #     tag: "v1.1.1"
+    #     pullPolicy: IfNotPresent
+  
+  # Resource limits and requests (based on extracted config)
+  resources:
+    requests:
+      cpu: 500m      # From extracted config
+      memory: 1Gi    # From extracted config
+    limits:
+      cpu: 1000m     # Increased for v1.3.0 performance
+      memory: 2Gi    # Increased for v1.3.0 performance
+  
+  # Node selector and tolerations
+  nodeSelector:
+    kubernetes.io/os: linux
+  
+  # Pod anti-affinity
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - ingress-nginx
+            - key: app.kubernetes.io/component
+              operator: In
+              values:
+              - controller
+          topologyKey: kubernetes.io/hostname
+
+# Default backend configuration
+defaultBackend:
+  enabled: false  # Disable default backend for simpler on-premise deployment
+  # image:
+  #   registry: your-local-registry.com
+  #   image: defaultbackend-amd64
+  #   tag: "1.5"
+  #   pullPolicy: IfNotPresent
+  # imagePullSecrets:
+  #   - name: your-registry-secret
+  
+  # resources:
+  #   requests:
+  #     cpu: 10m
+  #     memory: 20Mi
+  #   limits:
+  #     cpu: 100m
+  #     memory: 100Mi
+
+# RBAC configuration
+rbac:
+  create: true
+
+# Service account (matching extracted config)
+serviceAccount:
+  create: true
+  name: "dev-sds-ingress-ingress-controller"  # From extracted config

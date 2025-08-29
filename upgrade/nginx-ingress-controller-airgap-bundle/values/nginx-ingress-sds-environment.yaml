@@ -1,0 +1,147 @@
+# Nginx Ingress Controller Values for Samsung SDS Environment
+# Optimized for migration from v1.12.4 to v1.3.0 in devops-nginx-ingress namespace
+# Generated based on extracted configuration analysis
+
+controller:
+  # Replica configuration (from extracted config)
+  replicaCount: 1  # Matching current single replica setup
+  
+  # Image configuration for Samsung SDS registry
+  image:
+    registry: sscr.comm.scp-in.com  # Samsung SDS container registry
+    image: ingress-nginx/controller  # Standard v1.3.0 image path
+    tag: "v1.3.0"
+    pullPolicy: IfNotPresent
+  
+  # Image pull secrets for Samsung SDS registry
+  imagePullSecrets:
+    - name: samsungena.io-secret  # Samsung SDS registry authentication
+  
+  # Service configuration (preserving LoadBalancer setup)
+  service:
+    enabled: true
+    type: LoadBalancer  # Preserved from current environment
+    annotations:
+      # MetalLB annotation for on-premise LoadBalancer
+      metallb.universe.tf/allow-shared-ip: "nginx-ingress"
+    ports:
+      http: 80
+      https: 443
+    targetPorts:
+      http: http
+      https: https
+  
+  # Admission webhooks - DISABLED for airgap environment
+  admissionWebhooks:
+    enabled: false  # No kube-webhook-certgen image in airgap bundle
+  
+  # Resource configuration (based on extracted config + v1.3.0 optimizations)
+  resources:
+    requests:
+      cpu: 500m      # From current config
+      memory: 1Gi    # From current config
+    limits:
+      cpu: 1000m     # Increased for v1.3.0
+      memory: 2Gi    # Increased for v1.3.0
+  
+  # Node selector for Linux nodes
+  nodeSelector:
+    kubernetes.io/os: linux
+  
+  # Pod anti-affinity for HA (if scaling up later)
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - ingress-nginx
+            - key: app.kubernetes.io/component
+              operator: In
+              values:
+              - controller
+          topologyKey: kubernetes.io/hostname
+
+  # Ingress class configuration
+  ingressClass:
+    name: nginx
+    default: true
+    controllerValue: "k8s.io/ingress-nginx"
+
+  # Configuration for Samsung SDS environment
+  config:
+    # SSL protocols and ciphers
+    ssl-protocols: "TLSv1.2 TLSv1.3"
+    ssl-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+    
+    # Timeouts
+    proxy-connect-timeout: "60"
+    proxy-send-timeout: "60"
+    proxy-read-timeout: "60"
+    
+    # Buffer sizes
+    proxy-body-size: "100m"
+    client-max-body-size: "100m"
+    
+    # Keep alive
+    keep-alive-requests: "100"
+    upstream-keepalive-connections: "50"
+    
+    # Logging
+    log-format-json: "true"
+    log-format-escape-json: "true"
+
+# Default backend - DISABLED for simpler deployment
+defaultBackend:
+  enabled: false
+
+# RBAC configuration
+rbac:
+  create: true
+
+# Service account (matching extracted config)
+serviceAccount:
+  create: true
+  name: "dev-sds-ingress-ingress-controller"  # From extracted config
+
+# Metrics configuration
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false  # Disable if Prometheus not available
+
+# Pod Security Context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  fsGroup: 101
+
+# Security Context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 101
+
+# Migration notes
+migration:
+  sourceVersion: "v1.12.4"
+  targetVersion: "v1.3.0"
+  sourceNamespace: "devops-nginx-ingress"
+  sourceRelease: "dev-sds-ingress"
+  notes: |
+    - This is a DOWNGRADE from v1.12.4 to v1.3.0
+    - Admission webhooks disabled for airgap environment
+    - Resource limits increased for v1.3.0 performance
+    - Service account name preserved for continuity
+    - LoadBalancer service type preserved
+    - Samsung SDS registry configuration applied
