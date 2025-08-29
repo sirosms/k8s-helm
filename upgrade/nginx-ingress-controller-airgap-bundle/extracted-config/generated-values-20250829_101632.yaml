@@ -1,0 +1,38 @@
+# Generated Nginx Ingress Controller Values
+# Extracted on: Fri Aug 29 10:16:33 AM KST 2025
+# From namespace: devops-nginx-ingress
+# Current image: sscr.comm.scp-in.com/score-scpapps/nginx-ingress-controller:v1.12.4
+
+controller:
+  # Replica count from current deployment
+  replicaCount: 1
+  
+  # Current image configuration
+  image:
+    registry: sscr.comm.scp-in.com
+    image: score-scpapps/nginx-ingress-controller
+    tag: "v1.12.4"
+    pullPolicy: IfNotPresent
+  
+  # Service configuration
+  service:
+    enabled: true
+    type: LoadBalancer
+    
+  # Resource configuration
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+# RBAC configuration
+rbac:
+  create: true
+
+# Service account
+serviceAccount:
+  create: true
+  name: dev-sds-ingress-ingress-controller
