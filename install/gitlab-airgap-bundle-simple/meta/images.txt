@@ -1,0 +1,1 @@
+sirosms/gitlab-webservice-ce:v15.8.0

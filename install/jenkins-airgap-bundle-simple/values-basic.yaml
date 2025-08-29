@@ -1,0 +1,90 @@
+app: jenkins
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+image:
+  repository: jenkins/jenkins
+  tag: 2.375.2-lts
+  pullPolicy: IfNotPresent
+
+ports:
+  - name: http
+    containerPort: 8080
+    protocol: TCP
+  - name: tcp-slave
+    containerPort: 50000
+    protocol: TCP
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+  roleBindingKind: RoleBinding
+  roleRef:
+    kind: ClusterRole
+    name: cluster-admin
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports: 
+    - name: http
+      port: 8080
+      targetPort: http      
+      protocol: TCP
+    - name: tcp-slave
+      port: 50000
+      targetPort: tcp-slave
+      protocol: TCP
+
+readinessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /
+    port: 8080
+  initialDelaySeconds: 120
+  periodSeconds: 30
+  failureThreshold: 10
+  timeoutSeconds: 10
+
+livenessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /
+    port: 8080
+  initialDelaySeconds: 180
+  periodSeconds: 30
+  failureThreshold: 10
+  timeoutSeconds: 10
+
+resources:
+  requests:
+    cpu: 1
+    memory: 2Gi
+  limits:
+    cpu: 2
+    memory: 4Gi
+
+persistence:
+  - name: home
+    mountPath: /var/jenkins_home
+    existingClaim: jenkins-home-dev
+
+ingress:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+certs:
+  import: false
+
+env:
+  open:
+    TZ: Asia/Seoul
+    JAVA_OPTS: "-Xms512m -Xmx1536m"

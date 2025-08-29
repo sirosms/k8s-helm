@@ -1,0 +1,27 @@
+image:
+  repository: "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/reflector/reflector"
+  tag: "v6.1.47"
+  pullPolicy: IfNotPresent
+
+# ECR에서 이미지를 가져오기 위한 secret (별도로 생성 필요)
+# imagePullSecrets:
+#   - name: ecr-registry-secret
+
+# ServiceAccount 설정
+serviceAccount:
+  create: true
+  name: "reflector"
+
+# 리소스 제한
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Reflector 설정
+configuration:
+  logging:
+    level: info

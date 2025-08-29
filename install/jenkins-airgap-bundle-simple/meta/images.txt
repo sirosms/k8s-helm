@@ -1,0 +1,1 @@
+866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/devops-service/jenkins-master:2.375.2-lts
