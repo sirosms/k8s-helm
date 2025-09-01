@@ -25,7 +25,7 @@ echo
 
 # PVC 생성 확인
 echo "💡 Jenkins용 PVC가 미리 생성되어 있는지 확인하세요:"
-echo "   - jenkins-home-dev"
+echo "   - jenkins-home"
 echo
 read -r -p "PVC가 준비되어 있습니까? (y/N): " pvc_ready
 if [[ ! "$pvc_ready" =~ ^[Yy]$ ]]; then

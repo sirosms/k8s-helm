@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jenkins-home-dev
+  name: jenkins-home
   namespace: devops
 spec:
   accessModes:

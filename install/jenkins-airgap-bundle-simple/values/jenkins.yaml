@@ -117,7 +117,7 @@ nodeSelector:
 persistence:
   - name: home
     mountPath: /var/jenkins_home
-    existingClaim: jenkins-home-dev
+    existingClaim: jenkins-home
 
 certs:
   import: false
@@ -181,7 +181,7 @@ configMap:
   
     // slave to master access control
     Jenkins.instance.getInjector().getInstance(AdminWhitelistRule.class).setMasterKillSwitch(false)
-  jenkins.model.JenkinsLocationConfiguration.xml: |-
+  jenkins.model.JenkinsLocationConfiguration.xml: |
     <?xml version='1.1' encoding='UTF-8'?>
     <jenkins.model.JenkinsLocationConfiguration>
     <!-- Edit admin email -->
@@ -191,9 +191,9 @@ configMap:
       <jenkinsUrl>https://jenkins-dev.samsungena.io</jenkinsUrl>
     <!--//Edit jenkins url -->  
     </jenkins.model.JenkinsLocationConfiguration>
-  jenkins.install.UpgradeWizard.state: |-
+  jenkins.install.UpgradeWizard.state: |
     2.375.2
-  config.xml: |-
+  config.xml: |
     <?xml version='1.1' encoding='UTF-8'?>
     <hudson>
       <disabledAdministrativeMonitors>
@@ -209,12 +209,9 @@ configMap:
       <numExecutors>0</numExecutors>
       <mode>NORMAL</mode>
       <useSecurity>true</useSecurity>
-      <authorizationStrategy class="hudson.security.ProjectMatrixAuthorizationStrategy">
-    <!-- Edit admin -->
-        <permission>hudson.model.Hudson.Administer:admin@samsungena.io</permission>
-        <permission>hudson.model.Hudson.Read:authenticated</permission>
+      <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy">
+        <denyAnonymousReadAccess>true</denyAnonymousReadAccess>
       </authorizationStrategy>
-    <!--//Edit admin -->
       <securityRealm class="hudson.security.HudsonPrivateSecurityRealm">
         <disableSignup>false</disableSignup>
         <enableCaptcha>false</enableCaptcha>
