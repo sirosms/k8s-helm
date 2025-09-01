@@ -11,8 +11,8 @@ echo "=== Nexus 설치 스크립트 ==="
 
 # Nexus 설정 입력
 echo "Nexus 설정을 입력하세요:"
-read -r -p "Nexus 외부 URL [https://nexus.samsungena.io]: " NEXUS_URL
-NEXUS_URL=${NEXUS_URL:-https://nexus.samsungena.io}
+read -r -p "Nexus 외부 URL [https://nexus-dev.samsungena.io]: " NEXUS_URL
+NEXUS_URL=${NEXUS_URL:-https://nexus-dev.samsungena.io}
 
 read -r -p "관리자 이메일 [admin@samsungena.io]: " ADMIN_EMAIL
 ADMIN_EMAIL=${ADMIN_EMAIL:-admin@samsungena.io}

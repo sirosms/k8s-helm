@@ -10,7 +10,7 @@ spec:
   resources:
     requests:
       storage: 20Gi
-  storageClassName: nfs-client-sc
+  storageClassName: gp2
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -23,4 +23,4 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: nfs-client-sc
+  storageClassName: gp2

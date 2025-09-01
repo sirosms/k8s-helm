@@ -8,11 +8,11 @@ strategy:
   type: Recreate
 
 image:
-  repository: sonatype/nexus3
+  repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/nexus3
   tag: 3.37.3
   pullPolicy: IfNotPresent
 imagePullSecrets:
-# - name: devops-docker-credential
+  - name: registry-local-credential
 
 ports:
   - name: http
@@ -42,10 +42,11 @@ service:
 
 ingress:
   enabled: true
+  ingressClassName: nginx
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: 0m
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-  host: nexus.samsungena.io
+  host: nexus-dev.samsungena.io
   path: /
   servicePort: 8081
   tls:
@@ -66,10 +67,10 @@ readinessProbe:
   httpGet:
     path: /
     port: 8081
-  initialDelaySeconds: 30
-  periodSeconds: 60
-  failureThreshold: 3
-  timeoutSeconds: 1
+  initialDelaySeconds: 120
+  periodSeconds: 30
+  failureThreshold: 6
+  timeoutSeconds: 5
   successThreshold: 1
 
 livenessProbe:
@@ -78,19 +79,19 @@ livenessProbe:
   httpGet:
     path: /
     port: 8081
-  initialDelaySeconds: 30
+  initialDelaySeconds: 180
   periodSeconds: 60
-  failureThreshold: 3
-  timeoutSeconds: 1
+  failureThreshold: 5
+  timeoutSeconds: 5
   successThreshold: 1
 
 resources:
   requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
     cpu: 1
     memory: 4Gi
-  limits:
-    cpu: 2
-    memory: 8Gi
 
 nodeSelector:
 # kubernetes.io/nodetype: app
@@ -105,18 +106,20 @@ persistence:
 
 initContainers:
   - name: init
-    image: busybox:latest
+    image: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/busybox:latest
     volumeMounts:
       - mountPath: /nexus-data
         name: data
+      - mountPath: /nexus-data/db
+        name: db
       - mountPath: /nexus-data/nexus.properties
         name: config
         subPath: nexus.properties      
-    command: ['/bin/sh', '-c', 'mkdir -p /nexus-data/etc && chown 200:200 /nexus-data/etc && cp /nexus-data/nexus.properties /nexus-data/etc/nexus.properties' ]
+    command: ['/bin/sh', '-c', 'mkdir -p /nexus-data/etc /nexus-data/log /nexus-data/tmp /nexus-data/instances && chown 200:200 /nexus-data /nexus-data/etc /nexus-data/log /nexus-data/tmp /nexus-data/instances && chown -R 200:200 /nexus-data/db && cp /nexus-data/nexus.properties /nexus-data/etc/nexus.properties' ]
 
 addContainers:
   - name: metrics
-    image: ocadotechnology/nexus-exporter:latest
+    image: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/nexus-exporter:latest
     imagePullPolicy: IfNotPresent
     env:
       - name: NEXUS_HOST
