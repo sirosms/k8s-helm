@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # 설치 변수
-NAMESPACE="devops"
+NAMESPACE="${NAMESPACE:-devops}"
 RELEASE_NAME="jenkins"
 CHART_PATH="./charts/jenkins"
 VALUES_FILE="./values/jenkins.yaml"
@@ -49,9 +49,7 @@ echo "[3/3] Jenkins 설치"
 helm upgrade --install ${RELEASE_NAME} ${CHART_PATH} \
   --namespace ${NAMESPACE} \
   --values ${VALUES_FILE} \
-  --set ingress.host="$(echo $JENKINS_URL | sed 's|https\?://||')" \
-  --set configMap."jenkins.model.JenkinsLocationConfiguration.xml"="<?xml version='1.1' encoding='UTF-8'?><jenkins.model.JenkinsLocationConfiguration><adminAddress>$ADMIN_EMAIL</adminAddress><jenkinsUrl>$JENKINS_URL</jenkinsUrl></jenkins.model.JenkinsLocationConfiguration>" \
-  --set configMap."config.xml"="<?xml version='1.1' encoding='UTF-8'?><hudson><disabledAdministrativeMonitors><string>jenkins.security.apitoken.ApiTokenPropertyDisabledDefaultAdministrativeMonitor</string><string>jenkins.security.apitoken.ApiTokenPropertyEnabledNewLegacyAdministrativeMonitor</string><string>jenkins.security.csrf.CSRFAdministrativeMonitor</string><string>hudson.diagnosis.ReverseProxySetupMonitor</string><string>jenkins.diagnostics.SecurityIsOffMonitor</string><string>jenkins.security.QueueItemAuthenticatorMonitor</string></disabledAdministrativeMonitors><version>2.319.3</version><installStateName>RESTART</installStateName><numExecutors>0</numExecutors><mode>NORMAL</mode><useSecurity>true</useSecurity><authorizationStrategy class=\"hudson.security.ProjectMatrixAuthorizationStrategy\"><permission>hudson.model.Hudson.Administer:$ADMIN_EMAIL</permission><permission>hudson.model.Hudson.Read:authenticated</permission></authorizationStrategy><securityRealm class=\"hudson.security.HudsonPrivateSecurityRealm\"><disableSignup>false</disableSignup><enableCaptcha>false</enableCaptcha></securityRealm><disableRememberMe>false</disableRememberMe><projectNamingStrategy class=\"jenkins.model.ProjectNamingStrategy\$DefaultProjectNamingStrategy\"/><workspaceDir>\${JENKINS_HOME}/workspace/\${ITEM_FULLNAME}</workspaceDir><buildsDir>\${ITEM_ROOTDIR}/builds</buildsDir><markupFormatter class=\"hudson.markup.EscapedMarkupFormatter\"/><viewsTabBar class=\"hudson.views.DefaultViewsTabBar\"/><myViewsTabBar class=\"hudson.views.DefaultMyViewsTabBar\"/><quietPeriod>5</quietPeriod><scmCheckoutRetryCount>0</scmCheckoutRetryCount><views><hudson.model.AllView><owner class=\"hudson\" reference=\"../../..\"/><name>all</name><filterExecutors>false</filterExecutors><filterQueue>false</filterQueue><properties class=\"hudson.model.View\$PropertyList\"/></hudson.model.AllView></views><primaryView>all</primaryView><slaveAgentPort>50000</slaveAgentPort><label></label><nodeProperties/><globalNodeProperties/><noUsageStatistics>true</noUsageStatistics><crumbIssuer class=\"hudson.security.csrf.DefaultCrumbIssuer\"><excludeClientIPFromCrumb>true</excludeClientIPFromCrumb></crumbIssuer></hudson>" \
+  --set ingress.host="$(echo "$JENKINS_URL" | sed 's|^https://||')" \
   --timeout 900s
 
 echo
