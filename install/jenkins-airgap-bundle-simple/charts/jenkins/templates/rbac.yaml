@@ -1,0 +1,19 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: {{ .Values.rbac.roleBindingKind | default "RoleBinding" }}
+metadata:
+  name: {{ include "jenkins.fullname" . }}
+  labels:
+    {{- include "jenkins.labels" . | nindent 4 }}
+  {{- if eq (.Values.rbac.roleBindingKind | default "RoleBinding") "ClusterRoleBinding" }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "jenkins.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: {{ .Values.rbac.roleRef.kind | default "ClusterRole" }}
+  name: {{ .Values.rbac.roleRef.name | default "cluster-admin" }}
+{{- end }}
