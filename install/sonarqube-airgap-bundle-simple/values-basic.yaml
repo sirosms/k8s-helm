@@ -1,0 +1,78 @@
+app: nexus
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+image:
+  repository: sonatype/nexus3
+  tag: 3.37.3
+  pullPolicy: IfNotPresent
+
+ports:
+  - name: http
+    containerPort: 8081
+    protocol: TCP
+
+serviceAccount:
+  create: false
+
+rbac:
+  create: false
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports: 
+    - name: http
+      port: 8081
+      targetPort: http      
+      protocol: TCP
+
+readinessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /
+    port: 8081
+  initialDelaySeconds: 120
+  periodSeconds: 30
+  failureThreshold: 10
+  timeoutSeconds: 10
+
+livenessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /
+    port: 8081
+  initialDelaySeconds: 180
+  periodSeconds: 30
+  failureThreshold: 10
+  timeoutSeconds: 10
+
+resources:
+  requests:
+    cpu: 1
+    memory: 2Gi
+  limits:
+    cpu: 2
+    memory: 4Gi
+
+persistence:
+  - name: data
+    mountPath: /nexus-data
+    existingClaim: nexus-data
+
+ingress:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+certs:
+  import: false
+
+env:
+  open:
+    TZ: Asia/Seoul

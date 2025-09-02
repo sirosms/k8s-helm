@@ -1,0 +1,135 @@
+## Default values for sonarqube.
+
+app: sonarqube
+
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+image:
+  repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/sonarqube
+  tag: 8.9.3-community
+  pullPolicy: IfNotPresent
+imagePullSecrets:
+  - name: registry-local-credential
+
+ports:
+  - name: http
+    containerPort: 9000
+    protocol: TCP
+  - name: jmx-exporter
+    containerPort: 8081
+    protocol: TCP
+
+service:
+  enabled: true
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8081"
+    prometheus.io/path: "/"
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9000
+      targetPort: http
+      protocol: TCP
+    - name: jmx-exporter
+      port: 8081
+      targetPort: jmx-exporter
+      protocol: TCP
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 0m
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  host: sonarqube-dev.samsungena.io
+  path: /
+  servicePort: 9000
+  tls:
+    enabled: true
+    secretName: samsungena.io-tls
+
+networkPolicy:
+  enabled: false
+
+hostAliases:
+# - ip: 70.100.100.100
+#   hostnames:
+#     - devops.sdspaas.io
+
+readinessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /
+    port: 9000
+  initialDelaySeconds: 30
+  periodSeconds: 60
+  failureThreshold: 3
+  timeoutSeconds: 1
+  successThreshold: 1
+
+livenessProbe:
+  enabled: true
+  type: httpGet
+  httpGet:
+    path: /
+    port: 9000
+  initialDelaySeconds: 30
+  periodSeconds: 60
+  failureThreshold: 3
+  timeoutSeconds: 1
+  successThreshold: 1
+
+resources:
+  requests:
+    cpu: 1
+    memory: 3Gi
+  limits:
+    cpu: 2
+    memory: 6Gi
+
+nodeSelector:
+# kubernetes.io/nodetype: app
+
+persistence:
+  - name: extensions
+    mountPath: /opt/sonarqube/extensions
+    existingClaim: sonarqube-extensions
+  - name: logs
+    mountPath: /opt/sonarqube/logs
+    existingClaim: sonarqube-logs
+  - name: data
+    mountPath: /opt/sonarqube/data
+    existingClaim: sonarqube-data
+  - name: agent
+    mountPath: /usr/share/agent
+
+env:
+  open:
+    SERVER_BASE_URL: "https://sonarqube-dev.samsungena.io"
+    JAVA_TOOL_OPTIONS: "-javaagent:/usr/share/agent/jmx-javaagent.jar=8081:/usr/share/agent/tomcat.yaml"
+    SONARQUBE_JDBC_URL: jdbc:postgresql://gitlab-dev-postgres.c8thupqwxcj4.ap-northeast-2.rds.amazonaws.com:5432/sonar
+    SONARQUBE_JDBC_USERNAME: sonar    
+  secret:
+    SONARQUBE_JDBC_PASSWORD: epqmdhqtm1@
+
+initContainers:
+  - name: jmx-exporter
+    image: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/jmx-agent:0.17.2
+    volumeMounts:
+      - mountPath: /usr/share/agent
+        name: agent
+    command: ['/bin/sh', '-c', 'cp /usr/agent/* /usr/share/agent/']
+
+addVolumeMounts:
+#  - volumeName: config
+#    mountPath: opt/sonarqube/conf/sonar.properties
+#    subPath: sonar.properties
+
+configMap:
+#  sonar.properties: |-
+#    sonar.web.context=/sonarqube

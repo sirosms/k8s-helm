@@ -1,0 +1,8 @@
+FROM busybox:latest
+
+# Copy javaagent jar and config
+COPY jmx_prometheus_javaagent-0.17.2.jar /usr/agent/jmx-javaagent.jar
+COPY tomcat.yaml /usr/agent/tomcat.yaml
+
+# Make sure files are readable
+RUN chmod 644 /usr/agent/*

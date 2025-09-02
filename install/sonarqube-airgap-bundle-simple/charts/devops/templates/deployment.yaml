@@ -1,0 +1,205 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.fullname" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+  annotations:
+  {{- with .Values.annotations.deployment }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: {{ .Values.strategy.type }}
+  {{- if eq "RollingUpdate" .Values.strategy.type }}
+    rollingUpdate:
+      maxSurge: {{ .Values.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.strategy.rollingUpdate.maxUnavailable }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- include "app.selectorLabels" . | nindent 8 }}
+      annotations:
+      {{- with .Values.annotations.pod }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      hostAliases:
+        {{- toYaml .Values.hostAliases | nindent 8}}
+      initContainers:
+      {{- with .Values.initContainers }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}    
+      containers:
+        - name: devops-{{ .Values.app }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          {{- range $name, $value := .Values.env.open }}
+            {{- if not (empty $value) }}
+            - name: {{ $name | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- end }}
+          {{- $config_name := include "app.fullname" . }}
+          {{- range $name, $value := .Values.env.config }}
+            {{- if not (empty $value) }}
+            - name: {{ $name | quote }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ $config_name }}
+                  key: {{ $value | quote }}
+            {{- end }}
+          {{- end }}
+          {{- $secret_name := include "app.fullname" . }}
+          {{- range $name, $value := .Values.env.secret }}
+            {{- if not ( empty $value) }}
+            - name: {{ $name | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: {{ $name | quote }}
+            {{- end }}
+          {{- end }}
+        {{- with .Values.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- if .Values.service.enabled }}
+          ports:
+          {{- range .Values.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ .protocol }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+          {{- if eq "httpGet" .Values.readinessProbe.type }}
+            httpGet:
+              path: {{ .Values.readinessProbe.httpGet.path }}
+              port: {{ .Values.readinessProbe.httpGet.port }}
+              scheme: {{ .Values.readinessProbe.httpGet.scheme }}
+          {{- else if eq "exec" .Values.readinessProbe.type }}
+            exec:
+              command:
+              {{- range .Values.readinessProbe.exec.command }}
+              - {{ . }}
+              {{- end }}
+          {{- else if eq "tcpSocket" .Values.readinessProbe.type }}
+            tcpSocket:
+              port: {{ .Values.readinessProbe.tcpSocket.port }}
+          {{- end }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+        {{- end }}
+        {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+          {{- if eq "httpGet" .Values.livenessProbe.type }}
+            httpGet:
+              path: {{ .Values.livenessProbe.httpGet.path }}
+              port: {{ .Values.livenessProbe.httpGet.port }}
+              scheme: {{ .Values.readinessProbe.httpGet.scheme }}
+          {{- else if eq "exec" .Values.livenessProbe.type }}
+            exec:
+              command:
+              {{- range .Values.livenessProbe.exec.command }}
+              - {{ . }}
+              {{- end }}
+          {{- else if eq "tcpSocket" .Values.livenessProbe.type }}
+            tcpSocket:
+              port: {{ .Values.livenessProbe.tcpSocket.port }}
+          {{- end }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+        {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          {{- range .Values.persistence }}
+            - mountPath: {{ .mountPath }}
+              name: {{ .name }}
+          {{- end }}
+          {{- if .Values.addVolumeMounts }}
+            {{- range .Values.addVolumeMounts }}
+            - mountPath: {{ .mountPath }}
+              name: {{ .volumeName }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.certs.import }}
+            - mountPath: /mnt/certs
+              name: import-certs
+          {{- end }}
+      {{- with .Values.addContainers }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}  
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+      {{- range .Values.persistence }}
+        - name: {{ .name }}
+        {{- if .existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .existingClaim }}
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.configMap }}
+        - name: config
+          configMap:
+            name: {{ template "app.fullname" . }}
+            defaultMode: 0777
+      {{- end }}
+      {{- if .Values.env.secret }}
+        - name: secret
+          secret:
+            secretName: {{ include "app.fullname" . }}
+      {{- end }}      
+      {{- if or .Values.ingress.tls.enabled .Values.ingress.tls.create }}
+        - name: secret-tls
+          secret:
+            secretName: {{ include "app.tlsSecretName" . }}
+      {{- end }}
+      {{- if .Values.certs.import }}
+        - name: import-certs
+          configMap:
+            name: {{ include "app.certsConfigMapName" . }}
+      {{- end }}
