@@ -26,6 +26,7 @@ service:
 
 ingress:
   enabled: true
+  ingressClassName: nginx
   hostname: keycloak-dev.samsungena.io
   path: /
   annotations:
