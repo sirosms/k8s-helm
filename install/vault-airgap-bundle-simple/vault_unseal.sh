@@ -1,0 +1,3 @@
+kubectl --namespace devops-vault exec -it pod/vault-0 -- vault operator unseal kubectl -n devops-common get secret vault-secrets -p json | jq -r '.data.key1' | base64 -d
+kubectl --namespace devops-vault exec -it pod/vault-0 -- vault operator unseal kubectl -n devops-common get secret vault-secrets -p json | jq -r '.data.key2' | base64 -d
+kubectl --namespace devops-vault exec -it pod/vault-0 -- vault operator unseal kubectl -n devops-common get secret vault-secrets -p json | jq -r '.data.key3' | base64 -d

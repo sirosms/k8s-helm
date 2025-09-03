@@ -1,0 +1,1 @@
+vault write auth/userpass/users/mitchellh password=foo

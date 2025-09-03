@@ -1,0 +1,16 @@
+auth:
+  adminUser: admin
+  adminPassword: ""
+service:
+  type: ClusterIP
+
+postgresql:
+  enabled: false
+
+externalDatabase:
+  host: 192.168.30.2
+  port: 5432
+  user: keycloak
+  database: keycloak
+  existingSecret: keycloak-secrets
+  existingSecretPasswordKey: db_password
