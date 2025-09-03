@@ -1,16 +1,15 @@
+USER-SUPPLIED VALUES:
 auth:
-  adminUser: admin
   adminPassword: ""
-service:
-  type: ClusterIP
-
-postgresql:
-  enabled: false
-
+  adminUser: admin
 externalDatabase:
-  host: 192.168.30.2
-  port: 5432
-  user: keycloak
   database: keycloak
   existingSecret: keycloak-secrets
   existingSecretPasswordKey: db_password
+  host: 66.13.14.34
+  port: 2866
+  user: keycloak
+postgresql:
+  enabled: false
+service:
+  type: ClusterIP

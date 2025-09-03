@@ -1,0 +1,56 @@
+global:
+  imageRegistry: "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com"
+  imagePullSecrets:
+    - name: registry-local-credential
+  storageClass: "gp2"
+
+image:
+  registry: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com
+  repository: keycloak
+  tag: 18.0.2-debian-11-r25
+  pullPolicy: IfNotPresent
+  pullSecrets:
+    - name: registry-local-credential
+
+auth:
+  adminUser: admin
+  adminPassword: "keycloak123!"
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  ports:
+    http: 80
+    https: 443
+
+ingress:
+  enabled: true
+  hostname: keycloak-dev.samsungena.io
+  path: /
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  tls: true
+  extraTls:
+    - secretName: samsungena.io-tls
+      hosts:
+        - keycloak-dev.samsungena.io
+
+postgresql:
+  enabled: false
+
+externalDatabase:
+  host: "gitlab-dev-postgres.c8thupqwxcj4.ap-northeast-2.rds.amazonaws.com"
+  port: 5432
+  user: keycloak
+  database: keycloak
+  password: "epqmdhqtm1@"
+
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 250m
+  limits:
+    memory: 1Gi
+    cpu: 500m
