@@ -1,0 +1,66 @@
+USER-SUPPLIED VALUES:
+alertmanager:
+  alertmanagerSpec:
+    image:
+      repository: docker-proxy.secl.samsung.co.kr/prometheus/alertmanager
+  enabled: true
+grafana:
+  enabled: true
+  grafana.ini:
+    auth:
+      oauth_auto_login: false
+    auth.generic_oauth:
+      allow_sign_up: true
+      api_url: https://keycloak.secl.samsung.co.kr/realms/devops/protocol/openid-connect/userinfo
+      auth_url: https://keycloak.secl.samsung.co.kr/realms/devops/protocol/openid-connect/auth
+      client_id: grafana
+      client_secret: qrJohaIDlkZdVQBd2IsweWR8HEErRK6T
+      enabled: true
+      name: SCP
+      scopes: openid,profile,email,groups
+      token_url: https://keycloak.secl.samsung.co.kr/realms/devops/protocol/openid-connect/token
+    security:
+      allow_embedding: true
+      cookie_samesite: disabled
+      cookie_secure: false
+    server:
+      root_url: https://grafana.secl.samsung.co.kr
+  image:
+    repository: docker-proxy.secl.samsung.co.kr/grafana/grafana
+    sidecar:
+      image:
+        repository: docker-proxy.secl.samsung.co.kr/kiwigrid/k8s-sidecar
+kube-state-metrics:
+  image:
+    repository: docker-proxy.secl.samsung.co.kr/kube-state-metrics/kube-state-metrics
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: false
+prometheus:
+  enabled: true
+  prometheusSpec:
+    image:
+      repository: docker-proxy.secl.samsung.co.kr/prometheus/prometheus
+prometheus-node-exporter:
+  image:
+    repository: docker-proxy.secl.samsung.co.kr/prometheus/node-exporter
+prometheusOperator:
+  admissionWebhooks:
+    patch:
+      enabled: true
+      image:
+        repository: docker-proxy.secl.samsung.co.kr/ingress-nginx/kube-webhook-certgen
+  enabled: true
+  image:
+    repository: docker-proxy.secl.samsung.co.kr/prometheus-operator/prometheus-operator
+  prometheusConfigReloader:
+    image:
+      repository: docker-proxy.secl.samsung.co.kr/prometheus-operator/prometheus-config-reloader
+  thanosImage:
+    repository: docker-proxy.secl.samsung.co.kr/thanos/thanos
+thanosRuler:
+  enabled: false
+  thanosRulerSpec:
+    image:
+      repository: docker-proxy.secl.samsung.co.kr/thanos/thanos
