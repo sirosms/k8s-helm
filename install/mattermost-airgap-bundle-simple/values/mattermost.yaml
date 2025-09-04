@@ -1,6 +1,6 @@
 # Default values for mattermost-team-edition.
 # This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Declare variables to
 image:
   repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/mattermost-team-edition
   tag: 7.2.0

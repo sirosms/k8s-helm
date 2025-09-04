@@ -1,0 +1,119 @@
+global:
+  imageRegistry: "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com"
+  imagePullSecrets:
+    - name: "registry-local-credential"
+
+# Prometheus Operator 설정
+prometheusOperator:
+  admissionWebhooks:
+    enabled: false
+  image:
+    repository: prometheus-operator
+    tag: v0.85.0
+  prometheusConfigReloader:
+    image:
+      repository: prometheus-config-reloader
+      tag: v0.85.0
+
+# Prometheus 서버 설정
+prometheus:
+  prometheusSpec:
+    image:
+      repository: prometheus
+      tag: v3.5.0
+    retention: 15d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp2
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    path: /
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/proxy-body-size: 50m
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - prometheus-dev.samsungena.io
+    tls:
+      - secretName: samsungena.io-tls
+        hosts:
+          - prometheus-dev.samsungena.io
+
+# AlertManager 설정
+alertmanager:
+  alertmanagerSpec:
+    image:
+      repository: alertmanager
+      tag: v0.28.1
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp2
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    path: /
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/proxy-body-size: 50m
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - alertmanager-dev.samsungena.io
+    tls:
+      - secretName: samsungena.io-tls
+        hosts:
+          - alertmanager-dev.samsungena.io
+
+# Grafana 설정
+grafana:
+  image:
+    repository: grafana
+    tag: 11.1.0
+  adminPassword: admin123!
+  initChownData:
+    enabled: false
+  sidecar:
+    dashboards:
+      enabled: false
+    datasources:
+      enabled: false
+  persistence:
+    enabled: true
+    storageClassName: gp2
+    size: 5Gi
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    path: /
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/proxy-body-size: 50m
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - grafana-dev.samsungena.io
+    tls:
+      - secretName: samsungena.io-tls
+        hosts:
+          - grafana-dev.samsungena.io
+
+# Node Exporter 설정
+prometheus-node-exporter:
+  image:
+    repository: node-exporter
+    tag: v1.8.2
+
+# Kube State Metrics 설정
+kube-state-metrics:
+  image:
+    repository: kube-state-metrics
+    tag: v2.13.0
