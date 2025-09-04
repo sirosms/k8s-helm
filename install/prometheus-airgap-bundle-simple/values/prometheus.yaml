@@ -3,6 +3,10 @@ global:
   imagePullSecrets:
     - name: "registry-local-credential"
 
+# 폐쇄망 환경을 위한 imagePullSecrets 전역 설정
+imagePullSecrets:
+  - name: "registry-local-credential"
+
 # Prometheus Operator 설정
 prometheusOperator:
   admissionWebhooks:
