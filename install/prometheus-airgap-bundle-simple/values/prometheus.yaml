@@ -11,6 +11,13 @@ imagePullSecrets:
 prometheusOperator:
   admissionWebhooks:
     enabled: false
+    patch:
+      enabled: false
+    certManager:
+      enabled: false
+  # TLS Secret 관련 설정 비활성화 (폐쇄망 환경)
+  tls:
+    enabled: false
   image:
     repository: prometheus-operator
     tag: v0.85.0
