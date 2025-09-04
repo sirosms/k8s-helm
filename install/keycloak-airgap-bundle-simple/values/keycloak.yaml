@@ -1,7 +1,7 @@
 global:
   imageRegistry: "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com"
   imagePullSecrets:
-    - name: registry-local-credential
+    - registry-local-credential
   storageClass: "gp2"
 
 image:
@@ -10,7 +10,7 @@ image:
   tag: 18.0.2-debian-11-r25
   pullPolicy: IfNotPresent
   pullSecrets:
-    - name: registry-local-credential
+    - registry-local-credential
 
 auth:
   adminUser: admin
