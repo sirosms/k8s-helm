@@ -45,23 +45,41 @@ for i in "${!IMAGES[@]}"; do
     image="${IMAGES[$i]}"
     echo "[$((i+1))/${#IMAGES[@]}] 다운로드 중: $image"
     
-    # 이미지 pull 시도
-    if docker pull --platform linux/amd64 "$image" 2>/dev/null; then
-        echo "✅ 이미지 pull 성공: $image"
+    # 이미지 pull 시도 (AMD64 강제)
+    echo "AMD64 이미지 pull 중..."
+    if DOCKER_DEFAULT_PLATFORM=linux/amd64 docker pull --platform linux/amd64 "$image"; then
+        echo "✅ AMD64 이미지 pull 성공: $image"
+        
+        # 아키텍처 확인
+        ARCH=$(docker image inspect "$image" --format '{{.Architecture}}' 2>/dev/null || echo "unknown")
+        echo "이미지 아키텍처: $ARCH"
         
         # tar 파일명 생성 (슬래시와 콜론을 언더스코어로 변경)
         filename=$(echo $image | sed 's/[\/:]/_/g' | sed 's/\./_/g')
         
-        # 이미지를 tar 파일로 저장 (manifest 문제 방지를 위해 --platform 옵션 제거)
-        if docker save "$image" > "images/${filename}.tar" 2>/dev/null; then
-            echo "✅ 이미지 저장 성공: images/${filename}.tar"
-            echo "$image -> ${filename}.tar" >> images/image-list.txt
-            success_count=$((success_count + 1))
+        # 기존 이미지 삭제 후 재저장 (manifest 문제 해결)
+        echo "이미지 저장 중..."
+        if docker save "$image" -o "images/${filename}.tar"; then
+            # 파일 크기 확인
+            if [ -s "images/${filename}.tar" ]; then
+                FILESIZE=$(du -sh "images/${filename}.tar" | cut -f1)
+                echo "✅ 이미지 저장 성공: images/${filename}.tar (크기: $FILESIZE, 아키텍처: $ARCH)"
+                echo "$image -> ${filename}.tar (${ARCH})" >> images/image-list.txt
+                success_count=$((success_count + 1))
+            else
+                echo "❌ 빈 파일 생성됨: $image"
+                echo "# EMPTY FILE: $image" >> images/image-list.txt
+                failed_count=$((failed_count + 1))
+                rm -f "images/${filename}.tar"
+            fi
         else
             echo "❌ 이미지 저장 실패: $image"
             echo "# SAVE FAILED: $image" >> images/image-list.txt
             failed_count=$((failed_count + 1))
         fi
+        
+        # 로컬 이미지 정리 (manifest 충돌 방지)
+        docker rmi "$image" >/dev/null 2>&1 || true
     else
         echo "❌ 이미지 pull 실패: $image"
         echo "# PULL FAILED: $image" >> images/image-list.txt
