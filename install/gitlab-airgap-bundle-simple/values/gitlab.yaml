@@ -9,7 +9,7 @@ strategy:
 
 image:
   repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/gitlab/gitlab-ce
-  tag: "15.8.0-ce.0"
+  tag: "17.5.1-ce.0"
   pullPolicy: IfNotPresent
 imagePullSecrets:
   - name: registry-local-credential
@@ -171,8 +171,7 @@ configMap:
     manage_accounts['enable'] = true
     ### Prometheus
     prometheus_monitoring['enable'] = false
-    ### Grafana Dashboards
-    grafana['enable'] = false
+    ### Grafana Dashboards (removed in 17.x)
     ### Package repository (EE Only)
     gitlab_rails['packages_enabled'] = false
     ### Dependency proxy (EE Only)

@@ -16,8 +16,10 @@ UPGRADE_VERSIONS=(
     "15.11.13-ce.0"  # 15.8 -> 15.11 (마지막 15.11.x)
     "16.3.7-ce.0"    # 15.11 -> 16.3 (첫 16.x LTS)
     "16.7.8-ce.0"    # 16.3 -> 16.7 (16.x 최신 마이너)
-    "17.3.7-ce.0"    # 16.7 -> 17.3 (17.x LTS)
-    "17.6.2-ce.0"    # 17.3 -> 17.6 (최신 안정화)
+    "16.11.8-ce.0"   # 16.7 -> 16.11 (16.x 마지막 버전)
+    "17.3.7-ce.0"    # 16.11 -> 17.3 (17.x LTS)
+    "17.5.1-ce.0"    # 17.3 -> 17.5 (17.5.x 필수 단계)
+    "17.6.2-ce.0"    # 17.5 -> 17.6 (최신 안정화)
 )
 
 echo "=== GitLab 업그레이드 스크립트 시작 ==="
@@ -72,14 +74,14 @@ for i in "${!UPGRADE_VERSIONS[@]}"; do
     image_name="$ECR_REGISTRY/gitlab/gitlab-ce:$current_version"
     echo "이미지 확인: $image_name"
     
-#    if ! docker pull $image_name 2>/dev/null; then
-#        echo "❌ ECR에 이미지가 없습니다: $image_name"
-#        echo "다음 명령어로 이미지를 ECR에 푸시하세요:"
-#        echo "docker pull gitlab/gitlab-ce:$current_version"
-#        echo "docker tag gitlab/gitlab-ce:$current_version $image_name"
-#        echo "docker push $image_name"
-#        exit 1
-#    fi
+    if ! docker pull $image_name 2>/dev/null; then
+        echo "❌ ECR에 이미지가 없습니다: $image_name"
+        echo "다음 명령어로 이미지를 ECR에 푸시하세요:"
+        echo "docker pull gitlab/gitlab-ce:$current_version"
+        echo "docker tag gitlab/gitlab-ce:$current_version $image_name"
+        echo "docker push $image_name"
+        exit 1
+    fi
     
     # values.yaml 업데이트
     echo "values.yaml 업데이트 중..."
@@ -94,9 +96,7 @@ for i in "${!UPGRADE_VERSIONS[@]}"; do
     helm upgrade $RELEASE_NAME charts/gitlab \
         -f values/gitlab.yaml \
         -n $NAMESPACE \
-        --timeout=20m \
-        --wait \
-        --wait-for-jobs
+        --timeout=20m
 
     # 업그레이드 후 상태 확인
     echo "업그레이드 후 상태 확인 중..."
