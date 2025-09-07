@@ -9,7 +9,7 @@ strategy:
 
 image:
   repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/gitlab/gitlab-ce
-  tag: "17.5.1-ce.0"
+  tag: "17.6.2-ce.0"
   pullPolicy: IfNotPresent
 imagePullSecrets:
   - name: registry-local-credential
