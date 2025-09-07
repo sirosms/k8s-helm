@@ -1,0 +1,121 @@
+## Default values for gitlab-runner.
+## This is a YAML-formatted file.
+## Declare variables to be passed into your templates.
+
+# GitLab Runner configuration
+gitlabUrl: https://gitlab-dev.samsungena.io
+runnerRegistrationToken: "glrt-t3_Fv_Xad5Jk4ycGBpE89xm"  # Runner registration token from GitLab
+
+# Runner configuration
+runners:
+  config: |
+    [[runners]]
+      url = "https://gitlab-dev.samsungena.io"
+      tls_ca_file = "/home/gitlab-runner/.gitlab-runner/certs/ca.crt"
+      environment = ["RUNNER_TLS_INSECURE=true", "CI_SERVER_TLS_INSECURE=true", "SSL_VERIFY=false"]
+      [runners.kubernetes]
+        namespace = "devops-gitlab-runner"
+        image = "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/ubuntu:20.04"
+        helper_image = "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/gitlab/gitlab-runner-helper:x86_64-v15.11.0"
+        service_account = "gitlab-runner"
+        
+        # Resource limits
+        cpu_limit = "1"
+        memory_limit = "2Gi"
+        cpu_request = "500m"
+        memory_request = "1Gi"
+        
+        # Helper image resources
+        helper_cpu_limit = "200m"
+        helper_memory_limit = "256Mi"
+        helper_cpu_request = "100m"
+        helper_memory_request = "128Mi"
+        
+        # Image pull secrets
+        image_pull_secrets = ["registry-local-credential"]
+        
+        # Volumes for Docker and build cache
+        [[runners.kubernetes.volumes.host_path]]
+          name = "docker-sock"
+          mount_path = "/var/run/docker.sock"
+          read_only = false
+          host_path = "/var/run/docker.sock"
+        
+        # Build directory
+        [[runners.kubernetes.volumes.empty_dir]]
+          name = "builds"
+          mount_path = "/builds"
+          medium = "Memory"
+
+# Image configuration
+image:
+  registry: ""
+  image: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/gitlab/gitlab-runner
+  tag: alpine-v15.11.0
+
+imagePullSecrets:
+  - name: registry-local-credential
+
+# Resource limits
+resources:
+  limits:
+    memory: 256Mi
+    cpu: 200m
+  requests:
+    memory: 128Mi
+    cpu: 100m
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Service account
+serviceAccount:
+  create: true
+  name: gitlab-runner
+
+# RBAC
+rbac:
+  create: true
+  clusterWideAccess: false
+
+# Security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 999
+  capabilities:
+    drop:
+      - ALL
+
+# Pod security context
+podSecurityContext:
+  runAsUser: 999
+  runAsGroup: 999
+  fsGroup: 999
+
+# Host aliases to resolve GitLab domain to internal service
+# DNS 확인시 제거
+hostAliases:
+  - ip: "10.100.9.142"
+    hostnames:
+      - "gitlab-dev.samsungena.io"
+
+# Enable CA certificate for TLS verification
+certsSecretName: gitlab-runner-certs
+
+# Environment variables
+env:
+  TZ: Asia/Seoul
+  RUNNER_TLS_INSECURE: "true"
+  CI_SERVER_TLS_INSECURE: "true"
+  GITLAB_TLS_INSECURE: "true"
+  SSL_VERIFY: "false"
+
+# Clean configuration for TLS bypass
