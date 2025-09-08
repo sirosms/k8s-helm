@@ -1,0 +1,1 @@
+kubectl exec -n devops gitlab-85f747c77f-t7ksc -- chmod 600 /etc/gitlab/ssh_host_ecdsa_key /etc/gitlab/ssh_host_ed25519_key /etc/gitlab/ssh_host_rsa_key
