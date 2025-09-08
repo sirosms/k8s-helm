@@ -3,19 +3,24 @@
 ## Declare variables to be passed into your templates.
 
 # GitLab Runner configuration
-gitlabUrl: https://gitlab.devops.svc.cluster.local/
+gitlabUrl: https://gitlab-dev.samsungena.io
 runnerRegistrationToken: "glrt-t3_ikamkgGdsiFkmrbzwCt4"  # Runner registration token from GitLab
 
 # Runner configuration
 runners:
   config: |
     [[runners]]
-      url = "https://gitlab.devops.svc.cluster.local/"
-      tls_verify = false
+      url = "https://gitlab-dev.samsungena.io"
+      token = "glrt-t3_ikamkgGdsiFkmrbzwCt4"
+      tls_insecure = true
+      tls_skip_verify = true
+      # tls_ca_file = "/home/gitlab-runner/.gitlab-runner/certs/ca.crt"
+      tls-ca-file = "/home/gitlab-runner/.gitlab-runner/certs/ca.crt"
+      environment = ["RUNNER_TLS_INSECURE=true", "CI_SERVER_TLS_INSECURE=true", "SSL_VERIFY=false", "GIT_SSL_NO_VERIFY=true", "CURL_CA_BUNDLE=", "PYTHONHTTPSVERIFY=0"]
       [runners.kubernetes]
         namespace = "devops-gitlab-runner"
         image = "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/ubuntu:20.04"
-        helper_image = "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/gitlab/gitlab-runner-helper:x86_64-v17.6.0"
+        helper_image = "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/gitlab/gitlab-runner-helper:x86_64-v15.11.0"
         service_account = "gitlab-runner"
         
         # Resource limits
@@ -50,7 +55,7 @@ runners:
 image:
   registry: ""
   image: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/gitlab/gitlab-runner
-  tag: alpine-v17.6.0
+  tag: alpine-v15.11.0
 
 imagePullSecrets:
   - name: registry-local-credential
@@ -87,18 +92,39 @@ rbac:
 securityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: false
-  runAsNonRoot: true
-  runAsUser: 999
+  runAsNonRoot: false
+  runAsUser: 0
   capabilities:
     drop:
       - ALL
 
 # Pod security context
 podSecurityContext:
-  runAsUser: 999
-  runAsGroup: 999
-  fsGroup: 999
+  runAsUser: 0
+  runAsGroup: 0
+  fsGroup: 0
 
-# Environment variables
-env:
+# Host aliases using ELB IP for Ingress
+hostAliases:
+  - ip: "15.165.68.171"
+    hostnames:
+      - "gitlab-dev.samsungena.io"
+
+# Enable CA certificate for TLS verification
+certsSecretName: gitlab-runner-certs
+
+# Environment variables using chart's extraEnv
+extraEnv:
   TZ: Asia/Seoul
+  RUNNER_TLS_INSECURE: "true"
+  CI_SERVER_TLS_INSECURE: "true"
+  GITLAB_TLS_INSECURE: "true"
+  SSL_VERIFY: "false"
+  GIT_SSL_NO_VERIFY: "true"
+  CURL_CA_BUNDLE: ""
+  PYTHONHTTPSVERIFY: "0"
+  GODEBUG: "x509ignoreCN=0,x509sha1=1,x509skipverify=1"
+  GOSUMDB: "off"
+  GOPROXY: "direct"
+
+# Clean configuration for TLS bypass

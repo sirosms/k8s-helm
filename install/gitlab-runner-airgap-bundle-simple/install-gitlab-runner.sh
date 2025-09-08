@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-NAMESPACE="devops-gitlab-runner"
+NAMESPACE="devops-runner"
 RELEASE_NAME="gitlab-runner"
 
 echo "🚀 GitLab Runner 17.6.0 설치 시작 (폐쇄망 환경)"

@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: gitlab
+    meta.helm.sh/release-namespace: devops
+    prometheus.io/path: /gitlab
+    prometheus.io/port: "443"
+    prometheus.io/scrape: "true"
+  creationTimestamp: "2025-08-28T04:46:24Z"
+  labels:
+    app: gitlab
+    app.kubernetes.io/managed-by: Helm
+  name: gitlab
+  namespace: devops
+  resourceVersion: "4432524"
+  uid: a51adf51-be82-4bbb-b999-0e24fb52e256
+spec:
+  clusterIP: 10.100.9.142
+  clusterIPs:
+    - 10.100.9.142
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: https
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: gitlab
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
