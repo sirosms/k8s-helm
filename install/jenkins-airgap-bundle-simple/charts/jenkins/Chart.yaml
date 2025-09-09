@@ -10,4 +10,4 @@ type: application
 version: 0.1.0
 
 # This is the version number of the application being deployed.
-appVersion: "2.375.2"
+appVersion: "2.462.3-lts"

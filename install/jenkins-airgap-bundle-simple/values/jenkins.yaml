@@ -9,7 +9,7 @@ strategy:
 
 image:
   repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/devops-service/jenkins-master
-  tag: 2.375.2-lts
+  tag: 2.462.3-lts
   pullPolicy: IfNotPresent
 imagePullSecrets:
   - name: registry-local-credential
@@ -117,7 +117,7 @@ nodeSelector:
 persistence:
   - name: home
     mountPath: /var/jenkins_home
-    existingClaim: jenkins-home
+    existingClaim: jenkins-home-dev
 
 certs:
   import: false
