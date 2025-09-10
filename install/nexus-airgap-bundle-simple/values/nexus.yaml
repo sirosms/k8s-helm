@@ -9,7 +9,7 @@ strategy:
 
 image:
   repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/nexus3
-  tag: 3.37.3
+  tag: 3.70.3
   pullPolicy: IfNotPresent
 imagePullSecrets:
   - name: registry-local-credential
