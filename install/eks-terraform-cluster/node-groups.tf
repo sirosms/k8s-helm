@@ -1,58 +1,58 @@
-# Launch Template for EKS Node Group
-resource "aws_launch_template" "main" {
-  name_prefix   = "${var.cluster_name}-node-group-"
-  image_id      = data.aws_ami.eks_worker.id
-  instance_type = var.node_instance_type
+# Launch Template for EKS Node Group (commented out for simplicity)
+# resource "aws_launch_template" "main" {
+#   name_prefix   = "${var.cluster_name}-node-group-"
+#   image_id      = data.aws_ami.eks_worker.id
+#   instance_type = var.node_instance_type
+#
+#   vpc_security_group_ids = [aws_security_group.node_group.id]
+#
+#   user_data = base64encode(templatefile("${path.module}/userdata.sh", {
+#     cluster_name        = var.cluster_name
+#     endpoint           = aws_eks_cluster.main.endpoint
+#     certificate_authority = aws_eks_cluster.main.certificate_authority[0].data
+#   }))
+#
+#   block_device_mappings {
+#     device_name = "/dev/xvda"
+#     ebs {
+#       volume_size           = 50
+#       volume_type          = "gp3"
+#       delete_on_termination = true
+#       encrypted            = true
+#     }
+#   }
+#
+#   metadata_options {
+#     http_endpoint = "enabled"
+#     http_tokens   = "required"
+#     http_put_response_hop_limit = 2
+#   }
+#
+#   tag_specifications {
+#     resource_type = "instance"
+#     tags = merge(var.tags, {
+#       Name = "${var.cluster_name}-node"
+#       "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+#     })
+#   }
+#
+#   tags = var.tags
+#
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
-  vpc_security_group_ids = [aws_security_group.node_group.id]
-
-  user_data = base64encode(templatefile("${path.module}/userdata.sh", {
-    cluster_name        = var.cluster_name
-    endpoint           = aws_eks_cluster.main.endpoint
-    certificate_authority = aws_eks_cluster.main.certificate_authority[0].data
-  }))
-
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      volume_size           = 50
-      volume_type          = "gp3"
-      delete_on_termination = true
-      encrypted            = true
-    }
-  }
-
-  metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
-    http_put_response_hop_limit = 2
-  }
-
-  tag_specifications {
-    resource_type = "instance"
-    tags = merge(var.tags, {
-      Name = "${var.cluster_name}-node"
-      "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-    })
-  }
-
-  tags = var.tags
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-# Data source for EKS optimized AMI
-data "aws_ami" "eks_worker" {
-  filter {
-    name   = "name"
-    values = ["amazon-eks-node-${var.cluster_version}-v*"]
-  }
-
-  most_recent = true
-  owners      = ["602401143452"] # Amazon EKS AMI Account ID
-}
+# Data source for EKS optimized AMI (commented out)
+# data "aws_ami" "eks_worker" {
+#   filter {
+#     name   = "name"
+#     values = ["amazon-eks-node-${var.cluster_version}-v*"]
+#   }
+#
+#   most_recent = true
+#   owners      = ["602401143452"] # Amazon EKS AMI Account ID
+# }
 
 # Security Group for EKS Node Group
 resource "aws_security_group" "node_group" {
@@ -114,16 +114,16 @@ resource "aws_eks_node_group" "main" {
     max_unavailable = 1
   }
 
-  launch_template {
-    id      = aws_launch_template.main.id
-    version = aws_launch_template.main.latest_version
-  }
+  # launch_template {
+  #   id      = aws_launch_template.main.id
+  #   version = aws_launch_template.main.latest_version
+  # }
 
-  # Remote access configuration
-  remote_access {
-    ec2_ssh_key = aws_key_pair.main.key_name
-    source_security_group_ids = [aws_security_group.node_group.id]
-  }
+  # Remote access configuration (commented out for now)
+  # remote_access {
+  #   ec2_ssh_key = aws_key_pair.main.key_name
+  #   source_security_group_ids = [aws_security_group.node_group.id]
+  # }
 
   tags = merge(var.tags, {
     Name = "${var.cluster_name}-node-group"
@@ -137,10 +137,10 @@ resource "aws_eks_node_group" "main" {
   ]
 }
 
-# Key Pair for EC2 instances
-resource "aws_key_pair" "main" {
-  key_name   = "${var.cluster_name}-keypair"
-  public_key = file("${path.module}/eks-key.pub")
-
-  tags = var.tags
-}
+# Key Pair for EC2 instances (commented out for now)
+# resource "aws_key_pair" "main" {
+#   key_name   = "${var.cluster_name}-keypair"
+#   public_key = file("${path.module}/eks-key.pub")
+#
+#   tags = var.tags
+# }

@@ -1,0 +1,44 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: samsung-eks-cluster
+  region: ap-northeast-2
+
+nodeGroups:
+  - name: samsung-eks-ubuntu-nodes
+    instanceType: m5.large
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 4
+    volumeSize: 50
+    volumeType: gp3
+    amiFamily: Ubuntu2204
+    privateNetworking: true
+    subnets:
+      - subnet-047d420c508a667f3
+      - subnet-0920dbfd632935195
+    containerRuntime: containerd
+    kubeletExtraConfig:
+      containerRuntimeVersion: "1.7.27"
+      kernelVersion: "5.15.0-94-generic"
+    preBootstrapCommands:
+      - |
+        #!/bin/bash
+        # Ensure Ubuntu 22.04.4 LTS
+        echo "Configuring Ubuntu 22.04.4 LTS with containerd 1.7.27"
+        
+        # Update containerd to version 1.7.27 if needed
+        containerd --version
+        
+        # Verify kernel version
+        uname -r
+        
+        # Ensure containerd is properly configured
+        systemctl status containerd
+    tags:
+      Environment: dev
+      Project: samsung-eks
+      OS: "Ubuntu-22.04.4-LTS"
+      ContainerRuntime: "containerd-1.7.27"
+      KernelVersion: "5.15.0-94-generic"

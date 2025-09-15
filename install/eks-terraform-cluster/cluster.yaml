@@ -1,0 +1,48 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: samsung-eks-cluster
+  region: ap-northeast-2
+  version: "1.31"
+
+vpc:
+  id: vpc-088d73a40b1f9f451
+  subnets:
+    private:
+      ap-northeast-2a:
+        id: subnet-047d420c508a667f3
+      ap-northeast-2c:
+        id: subnet-0920dbfd632935195
+    public:
+      ap-northeast-2a:
+        id: subnet-0baca8a8f61fd762b
+      ap-northeast-2c:
+        id: subnet-06e410974eefcf260
+
+iam:
+  serviceRoleARN: arn:aws:iam::866376286331:role/samsung-eks-cluster-service-role
+
+nodeGroups:
+  - name: samsung-eks-nodes
+    instanceType: m5.large
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 4
+    volumeSize: 50
+    volumeType: gp3
+    privateNetworking: true
+    subnets:
+      - subnet-047d420c508a667f3
+      - subnet-0920dbfd632935195
+    iam:
+      instanceRoleARN: arn:aws:iam::866376286331:role/samsung-eks-cluster-nodegroup-role
+    tags:
+      Environment: dev
+      Project: samsung-eks
+    
+addons:
+  - name: vpc-cni
+  - name: coredns
+  - name: kube-proxy
+  - name: aws-ebs-csi-driver
