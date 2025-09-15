@@ -15,21 +15,21 @@ imagePullSecrets:
   - name: registry-local-credential
 
 ports:
-  - name: https
-    containerPort: 443
+  - name: http
+    containerPort: 80
     protocol: TCP
 
 service:
   enabled: true
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "443"
+    prometheus.io/port: "80"
     prometheus.io/path: "/gitlab"
   type: ClusterIP
   ports:
-    - name: https
-      port: 443
-      targetPort: https
+    - name: http
+      port: 80
+      targetPort: http
       protocol: TCP
 
 ingress:
@@ -44,7 +44,7 @@ ingress:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   host: gitlab-dev.samsungena.io
   path: /
-  servicePort: 443
+  servicePort: 80
   tls:
     enabled: true
     secretName: samsungena.io-tls
