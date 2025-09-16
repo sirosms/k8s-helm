@@ -3,20 +3,19 @@
 ## Declare variables to be passed into your templates.
 
 # GitLab Runner configuration
-gitlabUrl: https://gitlab-dev.samsungena.io
+gitlabUrl: https://gitlab-dev.secl.samsung.co.kr
 runnerRegistrationToken: "glrt-t3_ikamkgGdsiFkmrbzwCt4"  # Runner registration token from GitLab
 
 # Runner configuration
 runners:
   config: |
     [[runners]]
-      url = "https://gitlab-dev.samsungena.io"
+      url = "https://gitlab-dev.secl.samsung.co.kr"
       token = "glrt-t3_ikamkgGdsiFkmrbzwCt4"
-      tls_insecure = true
-      tls_skip_verify = true
-      # tls_ca_file = "/home/gitlab-runner/.gitlab-runner/certs/ca.crt"
-      tls-ca-file = "/home/gitlab-runner/.gitlab-runner/certs/ca.crt"
-      environment = ["RUNNER_TLS_INSECURE=true", "CI_SERVER_TLS_INSECURE=true", "SSL_VERIFY=false", "GIT_SSL_NO_VERIFY=true", "CURL_CA_BUNDLE=", "PYTHONHTTPSVERIFY=0"]
+      tls_insecure = false
+      tls_skip_verify = false
+      tls_ca_file = "/home/gitlab-runner/.gitlab-runner/certs/ca.crt"
+      environment = ["RUNNER_TLS_INSECURE=false", "CI_SERVER_TLS_INSECURE=false", "SSL_VERIFY=true", "GIT_SSL_NO_VERIFY=false"]
       [runners.kubernetes]
         namespace = "devops-gitlab-runner"
         image = "866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/ubuntu:20.04"
@@ -108,22 +107,19 @@ podSecurityContext:
 hostAliases:
   - ip: "15.165.68.171"
     hostnames:
-      - "gitlab-dev.samsungena.io"
+      - "gitlab-dev.secl.samsung.co.kr"
 
 # Enable CA certificate for TLS verification
-certsSecretName: gitlab-runner-certs
+certsSecretName: secl.samsung.co.kr-tls
 
 # Environment variables using chart's extraEnv
 extraEnv:
   TZ: Asia/Seoul
-  RUNNER_TLS_INSECURE: "true"
-  CI_SERVER_TLS_INSECURE: "true"
-  GITLAB_TLS_INSECURE: "true"
-  SSL_VERIFY: "false"
-  GIT_SSL_NO_VERIFY: "true"
-  CURL_CA_BUNDLE: ""
-  PYTHONHTTPSVERIFY: "0"
-  GODEBUG: "x509ignoreCN=0,x509sha1=1,x509skipverify=1"
+  RUNNER_TLS_INSECURE: "false"
+  CI_SERVER_TLS_INSECURE: "false"
+  GITLAB_TLS_INSECURE: "false"
+  SSL_VERIFY: "true"
+  GIT_SSL_NO_VERIFY: "false"
   GOSUMDB: "off"
   GOPROXY: "direct"
 
