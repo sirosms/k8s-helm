@@ -15,21 +15,21 @@ imagePullSecrets:
   - name: registry-local-credential
 
 ports:
-  - name: https
-    containerPort: 443
+  - name: http
+    containerPort: 80
     protocol: TCP
 
 service:
   enabled: true
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "443"
+    prometheus.io/port: "80"
     prometheus.io/path: "/gitlab"
   type: ClusterIP
   ports:
-    - name: https
-      port: 443
-      targetPort: https
+    - name: http
+      port: 80
+      targetPort: http
       protocol: TCP
 
 ingress:
@@ -37,17 +37,14 @@ ingress:
   ingressClassName: nginx
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: 0m
-    nginx.org/ssl-backends: gitlab
-    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
-    ingress.kubernetes.io/ssl-passthrough: "true"
-    nginx.ingress.kubernetes.io/secure-backends: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-  host: gitlab-dev.samsungena.io
+  host: gitlab-dev.secl.samsung.co.kr
   path: /
-  servicePort: 443
+  servicePort: 80
   tls:
     enabled: true
-    secretName: samsungena.io-tls
+    secretName: secl.samsung.co.kr-tls
 
 networkPolicy:
   enabled: false
@@ -62,8 +59,8 @@ readinessProbe:
   type: httpGet
   httpGet:
     path: /-/readiness
-    port: 443
-    scheme: HTTPS
+    port: 80
+    scheme: HTTP
   initialDelaySeconds: 180
   periodSeconds: 60
   failureThreshold: 3
@@ -75,8 +72,8 @@ livenessProbe:
   type: httpGet
   httpGet:
     path: /-/liveness
-    port: 443
-    scheme: HTTPS
+    port: 80
+    scheme: HTTP
   initialDelaySeconds: 180
   periodSeconds: 60
   failureThreshold: 3
@@ -108,7 +105,7 @@ persistence:
 env:
   open:
     TZ: Asia/Seoul
-    EXTERNAL_URL: https://gitlab-dev.samsungena.io
+    EXTERNAL_URL: https://gitlab-dev.secl.samsung.co.kr
     DB_HOST: gitlab-dev-postgres.c8thupqwxcj4.ap-northeast-2.rds.amazonaws.com
     DB_PORT: 5432
     DB_DATABASE: gitlabhq_production
@@ -117,16 +114,16 @@ env:
     GITLAB_OMNIBUS_CONFIG: gitlab_omnibus_config
   secret:
     DB_PASSWORD: GitlabDev123!
-# reflector 구현후
-addVolumeMounts:
-  - volumeName: samsungena-io-tls
-    mountPath: /etc/gitlab/ssl/gitlab-dev.samsungena.io.crt
-    subPath: tls.crt
-    secretName: samsungena.io-tls
-  - volumeName: samsungena-io-tls
-    mountPath: /etc/gitlab/ssl/gitlab-dev.samsungena.io.key
-    subPath: tls.key
-    secretName: samsungena.io-tls
+# reflector 구현후 (HTTP 모드에서는 불필요)
+# addVolumeMounts:
+#   - volumeName: secret-tls
+#     mountPath: /etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.crt
+#     subPath: tls.crt
+#     secretName: secl.samsung.co.kr-tls
+#   - volumeName: secret-tls
+#     mountPath: /etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.key
+#     subPath: tls.key
+#     secretName: secl.samsung.co.kr-tls
 
 configMap:
   ## https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template
@@ -137,8 +134,8 @@ configMap:
     # nginx['enable'] = true;
     # nginx['listen_port'] = 443;
     # nginx['listen_https'] = true;
-    # nginx['ssl_certificate'] = "/etc/gitlab/ssl/gitlab-dev.samsungena.io.crt";
-    # nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/gitlab-dev.samsungena.io.key";
+    # nginx['ssl_certificate'] = "/etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.crt";
+    # nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.key";
     ### GitLab user privileges
     gitlab_rails['gitlab_default_can_create_group'] = false
     # gitlab_rails['gitlab_username_changing_enabled'] = true
