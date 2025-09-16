@@ -5,24 +5,26 @@ controller:
   # Controller replica count (from extracted config)
   replicaCount: 1  # Matching current deployment
   
-  # Image configuration for Samsung SDS environment
+  # Image configuration for ECR airgap environment
   image:
-    registry: sscr.comm.scp-in.com  # Samsung SDS registry
-    image: ingress-nginx/controller  # Updated path for v1.3.0
-    tag: "v1.3.0"
+    registry: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com  # ECR registry
+    image: nginx-ingress-controller  # ECR repository name
+    tag: "v1.12.4"
+    digest: ""  # Clear digest to use tag instead
     pullPolicy: IfNotPresent
   
-  # Image pull secrets for Samsung SDS registry
+  # Image pull secrets for ECR access
   imagePullSecrets:
-    - name: samsungena.io-secret  # Samsung SDS registry secret
+    - name: ecr-secret
   
-  # Service configuration (matching extracted LoadBalancer setup)
+  # Service configuration with NLB
   service:
     enabled: true
-    type: LoadBalancer  # Preserved from current environment
+    type: LoadBalancer  # LoadBalancer with NLB annotation
     annotations:
-      # Add MetalLB annotation for on-premise LoadBalancer
-      metallb.universe.tf/allow-shared-ip: "nginx-ingress"
+      # Use NLB (Network Load Balancer) instead of ALB
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
     ports:
       http: 80
       https: 443
@@ -42,14 +44,14 @@ controller:
     #     tag: "v1.1.1"
     #     pullPolicy: IfNotPresent
   
-  # Resource limits and requests (based on extracted config)
+  # Resource limits and requests (optimized for v1.12.4)
   resources:
     requests:
-      cpu: 500m      # From extracted config
-      memory: 1Gi    # From extracted config
+      cpu: 500m      # Base requirement for v1.12.4
+      memory: 1Gi    # Base memory requirement
     limits:
-      cpu: 1000m     # Increased for v1.3.0 performance
-      memory: 2Gi    # Increased for v1.3.0 performance
+      cpu: 2000m     # Increased for v1.12.4 performance
+      memory: 4Gi    # Increased for v1.12.4 stability
   
   # Node selector and tolerations
   nodeSelector:
