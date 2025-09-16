@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: gitlab-opt-dev
+  name: gitlab-opt
   namespace: devops
 spec:
   accessModes:
@@ -15,7 +15,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: gitlab-etc-dev
+  name: gitlab-etc
   namespace: devops
 spec:
   accessModes:
@@ -28,7 +28,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: gitlab-log-dev
+  name: gitlab-log
   namespace: devops
 spec:
   accessModes:

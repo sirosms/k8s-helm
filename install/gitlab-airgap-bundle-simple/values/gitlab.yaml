@@ -94,13 +94,13 @@ nodeSelector:
 persistence:
   - name: opt
     mountPath: /var/opt/gitlab
-    existingClaim: gitlab-opt-dev
+    existingClaim: gitlab-opt
   - name: etc
     mountPath: /etc/gitlab
-    existingClaim: gitlab-etc-dev
+    existingClaim: gitlab-etc
   - name: log
     mountPath: /var/log/gitlab
-    existingClaim: gitlab-log-dev
+    existingClaim: gitlab-log
 
 env:
   open:
