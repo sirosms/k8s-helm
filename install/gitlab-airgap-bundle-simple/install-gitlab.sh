@@ -43,9 +43,9 @@ echo
 
 # PVC 생성 확인
 echo "💡 GitLab용 PVC가 미리 생성되어 있는지 확인하세요:"
-echo "   - gitlab-opt-dev"
-echo "   - gitlab-etc-dev"
-echo "   - gitlab-log-dev"
+echo "   - gitlab-opt"
+echo "   - gitlab-etc"
+echo "   - gitlab-log"
 echo
 read -r -p "PVC들이 준비되어 있습니까? (y/N): " pvc_ready
 if [[ ! "$pvc_ready" =~ ^[Yy]$ ]]; then

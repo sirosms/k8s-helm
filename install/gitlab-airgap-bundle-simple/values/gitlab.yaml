@@ -115,15 +115,15 @@ env:
   secret:
     DB_PASSWORD: GitlabDev123!
 # reflector 구현후 (HTTP 모드에서는 불필요)
-# addVolumeMounts:
-#   - volumeName: secret-tls
-#     mountPath: /etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.crt
-#     subPath: tls.crt
-#     secretName: secl.samsung.co.kr-tls
-#   - volumeName: secret-tls
-#     mountPath: /etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.key
-#     subPath: tls.key
-#     secretName: secl.samsung.co.kr-tls
+addVolumeMounts:
+ - volumeName: secret-tls
+   mountPath: /etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.crt
+   subPath: tls.crt
+   secretName: secl.samsung.co.kr-tls
+ - volumeName: secret-tls
+   mountPath: /etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.key
+   subPath: tls.key
+   secretName: secl.samsung.co.kr-tls
 
 configMap:
   ## https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template
