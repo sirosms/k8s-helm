@@ -131,11 +131,9 @@ configMap:
     external_url ENV['EXTERNAL_URL'];
     gitlab_rails['time_zone'] = ENV['TZ'];
     ### Nginx settings
-    # nginx['enable'] = true;
-    # nginx['listen_port'] = 443;
-    # nginx['listen_https'] = true;
-    # nginx['ssl_certificate'] = "/etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.crt";
-    # nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.key";
+    nginx['enable'] = true;
+    nginx['listen_port'] = 80;
+    nginx['listen_https'] = false;
     ### GitLab user privileges
     gitlab_rails['gitlab_default_can_create_group'] = false
     # gitlab_rails['gitlab_username_changing_enabled'] = true
