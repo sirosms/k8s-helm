@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: elasticsearch-fix
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: elasticsearch-fix
+  template:
+    metadata:
+      labels:
+        name: elasticsearch-fix
+    spec:
+      hostPID: true
+      hostNetwork: true
+      containers:
+      - name: elasticsearch-fix
+        image: busybox
+        securityContext:
+          privileged: true
+        command:
+        - /bin/sh
+        - -c
+        - |
+          sysctl -w vm.max_map_count=262144
+          echo "vm.max_map_count = 262144" >> /host/etc/sysctl.conf
+          while true; do sleep 3600; done
+        volumeMounts:
+        - name: host-sys
+          mountPath: /host/sys
+        - name: host-etc
+          mountPath: /host/etc
+      volumes:
+      - name: host-sys
+        hostPath:
+          path: /sys
+      - name: host-etc
+        hostPath:
+          path: /etc
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
