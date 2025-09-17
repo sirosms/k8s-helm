@@ -15,21 +15,21 @@ imagePullSecrets:
   - name: registry-local-credential
 
 ports:
-  - name: http
-    containerPort: 80
+  - name: https
+    containerPort: 443
     protocol: TCP
 
 service:
   enabled: true
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "80"
+    prometheus.io/port: "443"
     prometheus.io/path: "/gitlab"
   type: ClusterIP
   ports:
-    - name: http
-      port: 80
-      targetPort: http
+    - name: https
+      port: 443
+      targetPort: https
       protocol: TCP
 
 ingress:
@@ -37,11 +37,14 @@ ingress:
   ingressClassName: nginx
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: 0m
-    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.org/ssl-backends: gitlab
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/secure-backends: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   host: gitlab-dev.secl.samsung.co.kr
   path: /
-  servicePort: 80
+  servicePort: 443
   tls:
     enabled: true
     secretName: secl.samsung.co.kr-tls
@@ -59,8 +62,8 @@ readinessProbe:
   type: httpGet
   httpGet:
     path: /-/readiness
-    port: 80
-    scheme: HTTP
+    port: 443
+    scheme: HTTPS
   initialDelaySeconds: 180
   periodSeconds: 60
   failureThreshold: 3
@@ -72,8 +75,8 @@ livenessProbe:
   type: httpGet
   httpGet:
     path: /-/liveness
-    port: 80
-    scheme: HTTP
+    port: 443
+    scheme: HTTPS
   initialDelaySeconds: 180
   periodSeconds: 60
   failureThreshold: 3
@@ -114,7 +117,7 @@ env:
     GITLAB_OMNIBUS_CONFIG: gitlab_omnibus_config
   secret:
     DB_PASSWORD: GitlabDev123!
-# reflector 구현후 (HTTP 모드에서는 불필요)
+# reflector 구현후
 addVolumeMounts:
  - volumeName: secret-tls
    mountPath: /etc/gitlab/ssl/gitlab-dev.secl.samsung.co.kr.crt
@@ -131,9 +134,11 @@ configMap:
     external_url ENV['EXTERNAL_URL'];
     gitlab_rails['time_zone'] = ENV['TZ'];
     ### Nginx settings
-    nginx['enable'] = true;
-    nginx['listen_port'] = 80;
-    nginx['listen_https'] = false;
+    # nginx['enable'] = true;
+    # nginx['listen_port'] = 443;
+    # nginx['listen_https'] = true;
+    # nginx['ssl_certificate'] = "/etc/gitlab/ssl/gitlab-dev.samsungena.io.crt";
+    # nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/gitlab-dev.samsungena.io.key";
     ### GitLab user privileges
     gitlab_rails['gitlab_default_can_create_group'] = false
     # gitlab_rails['gitlab_username_changing_enabled'] = true
