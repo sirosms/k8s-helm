@@ -11,11 +11,11 @@ echo "=== SonarQube 설치 스크립트 ==="
 
 # SonarQube 설정 입력
 echo "SonarQube 설정을 입력하세요:"
-read -r -p "SonarQube 외부 URL [https://sonarqube-dev.samsungena.io]: " SONARQUBE_URL
-SONARQUBE_URL=${SONARQUBE_URL:-https://sonarqube-dev.samsungena.io}
+read -r -p "SonarQube 외부 URL [https://sonarqube-dev.secl.samsung.co.kr]: " SONARQUBE_URL
+SONARQUBE_URL=${SONARQUBE_URL:-https://sonarqube-dev.secl.samsung.co.kr}
 
-read -r -p "관리자 이메일 [admin@samsungena.io]: " ADMIN_EMAIL
-ADMIN_EMAIL=${ADMIN_EMAIL:-admin@samsungena.io}
+read -r -p "관리자 이메일 [admin@secl.samsung.co.kr]: " ADMIN_EMAIL
+ADMIN_EMAIL=${ADMIN_EMAIL:-admin@secl.samsung.co.kr}
 
 echo
 echo "입력된 설정:"
@@ -54,7 +54,7 @@ helm upgrade --install ${RELEASE_NAME} ${CHART_PATH} \
   --set ingress.host="$(echo $SONARQUBE_URL | sed 's|https\?://||')" \
   --set image.repository="866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/sonarqube" \
   --set image.tag="8.9.3-community" \
-  --set ingress.tls.secretName="samsungena.io-tls" \
+  --set ingress.tls.secretName="secl.samsung.co.kr-tls" \
   --timeout 900s
 
 echo

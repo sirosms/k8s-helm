@@ -45,12 +45,12 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: 0m
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-  host: sonarqube-dev.samsungena.io
+  host: sonarqube-dev.secl.samsung.co.kr
   path: /
   servicePort: 9000
   tls:
     enabled: true
-    secretName: samsungena.io-tls
+    secretName: secl.samsung.co.kr-tls
 
 networkPolicy:
   enabled: false
@@ -110,7 +110,7 @@ persistence:
 
 env:
   open:
-    SERVER_BASE_URL: "https://sonarqube-dev.samsungena.io"
+    SERVER_BASE_URL: "https://sonarqube-dev.secl.samsung.co.kr"
     JAVA_TOOL_OPTIONS: "-javaagent:/usr/share/agent/jmx-javaagent.jar=8081:/usr/share/agent/tomcat.yaml"
     SONARQUBE_JDBC_URL: jdbc:postgresql://gitlab-dev-postgres.c8thupqwxcj4.ap-northeast-2.rds.amazonaws.com:5432/sonar
     SONARQUBE_JDBC_USERNAME: sonar    
