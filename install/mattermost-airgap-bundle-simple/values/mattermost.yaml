@@ -3,7 +3,7 @@
 # Declare variables to
 image:
   repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/mattermost-team-edition
-  tag: 7.2.0
+  tag: 10.12.0
   imagePullPolicy: IfNotPresent
 
 initContainerImage:
@@ -60,11 +60,11 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-body-size: 50m
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
-    - mattermost-dev.samsungena.io
+    - mattermost-dev.secl.samsung.co.kr
   tls:
-    - secretName: samsungena.io-tls
+    - secretName: secl.samsung.co.kr-tls
       hosts:
-        - mattermost-dev.samsungena.io
+        - mattermost-dev.secl.samsung.co.kr
 
 route:
   enabled: false
