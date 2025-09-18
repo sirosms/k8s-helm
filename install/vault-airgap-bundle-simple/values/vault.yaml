@@ -9,7 +9,7 @@ injector:
 server:
   image:
     repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/vault
-    tag: 1.11.2
+    tag: 1.17.6
     pullPolicy: IfNotPresent
 
   dataStorage:
