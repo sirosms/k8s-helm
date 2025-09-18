@@ -50,13 +50,13 @@ server:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
     hosts:
-      - host: vault-dev.samsungena.io
+      - host: vault-dev.secl.samsung.co.kr
         paths:
           - /
     tls:
-      - secretName: samsungena.io-tls
+      - secretName: secl.samsung.co.kr-tls
         hosts:
-          - vault-dev.samsungena.io
+          - vault-dev.secl.samsung.co.kr
 
 #  resources:
 #    requests:
