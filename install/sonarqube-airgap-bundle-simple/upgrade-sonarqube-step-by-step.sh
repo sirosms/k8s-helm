@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # SonarQube 단계별 업그레이드 스크립트
-# 8.9.3 → 8.9.6 → 9.9.4 LTS로 안전한 단계별 업그레이드
+# 8.9.3 → 8.9.6 → 8.9.10으로 안전한 단계별 업그레이드
 
 # 색상 정의
 RED='\033[0;31m'
@@ -22,13 +22,13 @@ BACKUP_DIR="./backup-$(date +%Y%m%d-%H%M%S)"
 # 업그레이드 단계 정의
 UPGRADE_STEPS=(
     "8.9.3-community:8.9.6-community"
-    "8.9.6-community:9.9.4-community"
+    "8.9.6-community:8.9.10-community"
 )
 
 ECR_REGISTRY="866376286331.dkr.ecr.ap-northeast-2.amazonaws.com"
 
 echo -e "${BLUE}=== SonarQube 단계별 업그레이드 스크립트 ===${NC}"
-echo -e "${YELLOW}업그레이드 경로: 8.9.3 → 8.9.6 → 9.9.4 (LTS)${NC}"
+echo -e "${YELLOW}업그레이드 경로: 8.9.3 → 8.9.6 → 8.9.10${NC}"
 echo
 
 # 함수: 현재 버전 확인
@@ -163,18 +163,7 @@ upgrade_version() {
         exit 1
     fi
     
-    # 데이터베이스 마이그레이션 완료 대기 (9.x 업그레이드 시에만)
-    if [[ "$to_version" == "9.9.4-community" ]]; then
-        echo -e "\n${YELLOW}⚠️  메이저 버전 업그레이드 - 데이터베이스 마이그레이션 필요${NC}"
-        echo "웹 브라우저에서 https://sonarqube-dev.secl.samsung.co.kr/setup 접속"
-        echo "데이터베이스 마이그레이션을 완료하세요."
-        echo
-        read -r -p "데이터베이스 마이그레이션이 완료되었나요? (y/N): " migration_confirm
-        if [[ ! "$migration_confirm" =~ ^[Yy]$ ]]; then
-            echo -e "${YELLOW}⚠️  마이그레이션을 완료한 후 계속하세요.${NC}"
-            exit 1
-        fi
-    fi
+    # 8.x 버전 간 업그레이드이므로 특별한 마이그레이션 불필요
     
     echo -e "\n${GREEN}✅ 단계 ${step_num} 완료: ${from_version} → ${to_version}${NC}"
     
