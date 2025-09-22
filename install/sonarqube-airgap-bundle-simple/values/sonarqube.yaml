@@ -9,7 +9,7 @@ strategy:
 
 image:
   repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/sonarqube
-  tag: 8.9.6-community
+  tag: 8.9.10-community
   pullPolicy: IfNotPresent
 imagePullSecrets:
   - name: registry-local-credential
