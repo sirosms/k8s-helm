@@ -11,8 +11,6 @@ prometheusOperator:
       enabled: false
     certManager:
       enabled: false
-    deployment:
-      enabled: false
   # TLS Secret 관련 설정 비활성화 (폐쇄망 환경)
   tls:
     enabled: false
@@ -23,12 +21,16 @@ prometheusOperator:
     image:
       repository: prometheus-config-reloader
       tag: v0.67.1
+  # Kubelet 설정 수정 (v0.67.1 호환)
+  kubeletService:
+    enabled: true
+    namespace: kube-system
+    name: prometheus-kube-prometheus-kubelet
+  serviceMonitor:
+    interval: ""
 
 # Prometheus 서버 설정
 prometheus:
-  enabled: true
-  scrapeconfig:
-    enabled: true
   prometheusSpec:
     image:
       repository: prometheus
@@ -51,11 +53,11 @@ prometheus:
       nginx.ingress.kubernetes.io/proxy-body-size: 50m
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
     hosts:
-      - prometheus-dev.samsungena.io
+      - prometheus-dev.secl.samsung.co.kr
     tls:
-      - secretName: samsungena.io-tls
+      - secretName: secl.samsung.co.kr-tls
         hosts:
-          - prometheus-dev.samsungena.io
+          - prometheus-dev.secl.samsung.co.kr
 
 # AlertManager 설정
 alertmanager:
@@ -80,15 +82,14 @@ alertmanager:
       nginx.ingress.kubernetes.io/proxy-body-size: 50m
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
     hosts:
-      - alertmanager-dev.samsungena.io
+      - alertmanager-dev.secl.samsung.co.kr
     tls:
-      - secretName: samsungena.io-tls
+      - secretName: secl.samsung.co.kr-tls
         hosts:
-          - alertmanager-dev.samsungena.io
+          - alertmanager-dev.secl.samsung.co.kr
 
 # Grafana 설정
 grafana:
-  enabled: true
   image:
     repository: grafana
     tag: 10.1.0
@@ -100,9 +101,6 @@ grafana:
       enabled: false
     datasources:
       enabled: false
-  operator:
-    enabled: false
-    dashboardsConfigMapRefEnabled: false
   persistence:
     enabled: true
     storageClassName: gp2
@@ -116,11 +114,11 @@ grafana:
       nginx.ingress.kubernetes.io/proxy-body-size: 50m
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
     hosts:
-      - grafana-dev.samsungena.io
+      - grafana-dev.secl.samsung.co.kr
     tls:
-      - secretName: samsungena.io-tls
+      - secretName: secl.samsung.co.kr-tls
         hosts:
-          - grafana-dev.samsungena.io
+          - grafana-dev.secl.samsung.co.kr
 
 # Node Exporter 설정
 prometheus-node-exporter:
@@ -128,21 +126,10 @@ prometheus-node-exporter:
     repository: node-exporter
     tag: v1.6.1
 
-# Node Exporter 운영체제 설정
-nodeExporter:
-  operatingSystems:
-    linux:
-      enabled: true
-    darwin:
-      enabled: false
-    aix:
-      enabled: false
-
 # Kube State Metrics 설정
 kube-state-metrics:
   image:
     repository: kube-state-metrics
     tag: v2.10.0
-  prometheus:
-    scrapeconfig:
-      enabled: false
+  podSecurityPolicy:
+    enabled: false
