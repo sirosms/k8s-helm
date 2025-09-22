@@ -1,0 +1,228 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    checksum/config: d7ba89b11dff0770ca57e17a75725d03ccb9191bac66c30f5490cbfb4fb1d233
+    checksum/sc-dashboard-provider-config: e70bf6a851099d385178a76de9757bb0bef8299da6d8443602590e44f05fdf24
+    checksum/secret: aa16b4ae32f4327ad7e4b179badef2a01e19fd6469a7d18bf79b5bfde42ae2a6
+    cni.projectcalico.org/containerID: bb72c12e129428f12e4854bfb44f0fbc3e8cc64936af9d865467c20122173da2
+    cni.projectcalico.org/podIP: 172.21.214.39/32
+    cni.projectcalico.org/podIPs: 172.21.214.39/32
+    kubectl.kubernetes.io/default-container: grafana
+  creationTimestamp: "2025-09-04T12:13:21Z"
+  generateName: prometheus-grafana-5c5f84767-
+  labels:
+    app.kubernetes.io/instance: prometheus
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/version: 11.1.0
+    helm.sh/chart: grafana-9.4.4
+    pod-template-hash: 5c5f84767
+  name: prometheus-grafana-5c5f84767-66kgq
+  namespace: devops-prometheus
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: prometheus-grafana-5c5f84767
+    uid: aba5a912-d32d-4864-abd8-a74969d5175c
+  resourceVersion: "13778692"
+  uid: a142d0c3-850d-4d06-8858-a0e64c09c279
+spec:
+  automountServiceAccountToken: true
+  containers:
+  - env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: GF_SECURITY_ADMIN_USER
+      valueFrom:
+        secretKeyRef:
+          key: admin-user
+          name: prometheus-grafana
+    - name: GF_SECURITY_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: admin-password
+          name: prometheus-grafana
+    - name: GF_PATHS_DATA
+      value: /var/lib/grafana/
+    - name: GF_PATHS_LOGS
+      value: /var/log/grafana
+    - name: GF_PATHS_PLUGINS
+      value: /var/lib/grafana/plugins
+    - name: GF_PATHS_PROVISIONING
+      value: /etc/grafana/provisioning
+    image: devops-cafumkmm.scr.skr-west.scp-in.com/grafana:11.1.0
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 10
+      httpGet:
+        path: /api/health
+        port: 3000
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 30
+    name: grafana
+    ports:
+    - containerPort: 3000
+      name: grafana
+      protocol: TCP
+    - containerPort: 9094
+      name: gossip-tcp
+      protocol: TCP
+    - containerPort: 9094
+      name: gossip-udp
+      protocol: UDP
+    - containerPort: 6060
+      name: profiling
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /api/health
+        port: 3000
+        scheme: HTTP
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /etc/grafana/grafana.ini
+      name: config
+      subPath: grafana.ini
+    - mountPath: /var/lib/grafana
+      name: storage
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-fr6tv
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  imagePullSecrets:
+  - name: devops-docker-credential
+  nodeName: ske-devops-02-chcp5-hsch4
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 472
+    runAsGroup: 472
+    runAsNonRoot: true
+    runAsUser: 472
+  serviceAccount: prometheus-grafana
+  serviceAccountName: prometheus-grafana
+  shareProcessNamespace: false
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - configMap:
+      defaultMode: 420
+      name: prometheus-grafana
+    name: config
+  - name: storage
+    persistentVolumeClaim:
+      claimName: prometheus-grafana
+  - name: kube-api-access-fr6tv
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-09-04T12:13:22Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-09-04T12:13:21Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-09-04T12:13:21Z"
+    message: 'containers with unready status: [grafana]'
+    reason: ContainersNotReady
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-09-04T12:13:21Z"
+    message: 'containers with unready status: [grafana]'
+    reason: ContainersNotReady
+    status: "False"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-09-04T12:13:21Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://fb6395f35287333de906846afb112cfc96c13aa9acde09759294d835e2f70149
+    image: devops-cafumkmm.scr.skr-west.scp-in.com/grafana:11.1.0
+    imageID: devops-cafumkmm.scr.skr-west.scp-in.com/grafana@sha256:bde5c7baab9cae482cf7ef7a4c4e6b52d035e4e7a4f9784fca3a875c8a459291
+    lastState:
+      terminated:
+        containerID: containerd://fb6395f35287333de906846afb112cfc96c13aa9acde09759294d835e2f70149
+        exitCode: 255
+        finishedAt: "2025-09-04T12:15:00Z"
+        reason: Error
+        startedAt: "2025-09-04T12:15:00Z"
+    name: grafana
+    ready: false
+    restartCount: 4
+    started: false
+    state:
+      waiting:
+        message: back-off 1m20s restarting failed container=grafana pod=prometheus-grafana-5c5f84767-66kgq_devops-prometheus(a142d0c3-850d-4d06-8858-a0e64c09c279)
+        reason: CrashLoopBackOff
+    volumeMounts:
+    - mountPath: /etc/grafana/grafana.ini
+      name: config
+    - mountPath: /var/lib/grafana
+      name: storage
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-fr6tv
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 66.13.14.133
+  hostIPs:
+  - ip: 66.13.14.133
+  phase: Running
+  podIP: 172.21.214.39
+  podIPs:
+  - ip: 172.21.214.39
+  qosClass: BestEffort
+  startTime: "2025-09-04T12:13:21Z"
+
