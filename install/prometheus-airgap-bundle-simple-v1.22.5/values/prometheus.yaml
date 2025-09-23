@@ -9,6 +9,8 @@ prometheusOperator:
     enabled: false
     deployment:
       enabled: false
+      podDisruptionBudget:
+        enabled: false
     patch:
       enabled: false
     certManager:
