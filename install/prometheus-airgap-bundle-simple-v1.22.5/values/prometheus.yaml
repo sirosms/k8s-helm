@@ -7,6 +7,8 @@ global:
 prometheusOperator:
   admissionWebhooks:
     enabled: false
+    deployment:
+      enabled: false
     patch:
       enabled: false
     certManager:
