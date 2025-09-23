@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NAMESPACE="devops-argocd"
 RELEASE_NAME="argocd"
 CHART_VERSION="8.3.4"
-GITLAB_EXTERNAL_URL="argocd-dev.samsungena.io"
+GITLAB_EXTERNAL_URL="argocd-dev.secl.samsung.co.kr"
 
 # Configuration
 ECR_REGISTRY="866376286331.dkr.ecr.ap-northeast-2.amazonaws.com"
