@@ -3,7 +3,7 @@
 
 # Global configuration
 global:
-  domain: argocd-dev.samsungena.io
+  domain: argocd-dev.secl.samsung.co.kr
   
   # Image configuration
   image:
@@ -42,11 +42,11 @@ server:
       nginx.ingress.kubernetes.io/secure-backends: "true"
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
     hosts:
-      - argocd-dev.samsungena.io
+      - argocd-dev.secl.samsung.co.kr
     tls:
-      - secretName: samsungena.io-tls
+      - secretName: secl.samsung.co.kr-tls
         hosts:
-          - argocd-dev.samsungena.io
+          - argocd-dev.secl.samsung.co.kr
   
   # Service configuration
   service:
@@ -105,10 +105,10 @@ applicationSet:
       cpu: 250m
 
 # Host aliases using ELB IP for Ingress
-#hostAliases:
-#  - ip: "15.165.68.171"
-#    hostnames:
-#      - "argocd-dev.samsungena.io"
+hostAliases:
+  - ip: "52.79.172.99"
+    hostnames:
+      - "argocd-dev.secl.samsung.co.kr"
 
 # Environment variables
 extraEnv:
