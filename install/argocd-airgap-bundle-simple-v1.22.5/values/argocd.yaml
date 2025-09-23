@@ -1,0 +1,168 @@
+## ArgoCD Simple Configuration
+## Based on gitlab-runner.yaml structure
+
+# Global configuration
+global:
+  domain: argocd-dev.secl.samsung.co.kr
+  
+  # Image configuration
+  image:
+    repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/argocd
+    tag: "v3.1.3"
+    imagePullPolicy: IfNotPresent
+  
+  # Image pull secrets
+  imagePullSecrets:
+    - name: registry-local-credential
+  
+  # Security context
+#  securityContext:
+#    runAsUser: 999
+#    runAsGroup: 999
+#    fsGroup: 999
+
+# Server configuration
+server:
+  # Resource limits
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 200m
+  
+  # Ingress configuration
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+      ingress.kubernetes.io/ssl-passthrough: "true"
+      nginx.ingress.kubernetes.io/secure-backends: "true"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - argocd-dev.secl.samsung.co.kr
+    tls:
+      - secretName: secl.samsung.co.kr-tls
+        hosts:
+          - argocd-dev.secl.samsung.co.kr
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+
+# Repository server configuration
+repoServer:
+  resources:
+    limits:
+      memory: 1Gi
+      cpu: 500m
+    requests:
+      memory: 512Mi
+      cpu: 250m
+
+# Application controller configuration
+controller:
+  resources:
+    limits:
+      memory: 2Gi
+      cpu: 1000m
+    requests:
+      memory: 1Gi
+      cpu: 500m
+
+# Dex configuration for OIDC authentication (disabled by default)
+dex:
+  enabled: false
+  image:
+    repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/dex
+    tag: "v2.44.0"
+    imagePullPolicy: IfNotPresent
+  resources:
+    limits:
+      memory: 256Mi
+      cpu: 200m
+    requests:
+      memory: 128Mi
+      cpu: 100m
+  # To enable Dex for SSO authentication, set enabled: true
+  # and configure connectors in the config section
+
+# Notifications controller configuration
+notifications:
+  enabled: false
+
+# ApplicationSet controller configuration
+applicationSet:
+  enabled: true
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 250m
+
+# Host aliases using ELB IP for Ingress
+hostAliases:
+  - ip: "52.79.172.99"
+    hostnames:
+      - "argocd-dev.secl.samsung.co.kr"
+
+# Environment variables
+extraEnv:
+  TZ: Asia/Seoul
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# ArgoCD Configuration (ConfigMap)
+configs:
+  cm:
+    # Add custom users
+    accounts.pmwp: apiKey, login
+    accounts.pmwp.enabled: "true"
+    
+    # RBAC Configuration
+  rbac:
+    # Default policy
+    policy.default: role:readonly
+    
+    # Custom RBAC policies
+    policy.csv: |
+      # Admin role for pmwp user
+      p, role:pmwp-admin, applications, *, */*, allow
+      p, role:pmwp-admin, certificates, *, *, allow
+      p, role:pmwp-admin, clusters, *, *, allow
+      p, role:pmwp-admin, repositories, *, *, allow
+      p, role:pmwp-admin, logs, *, *, allow
+      p, role:pmwp-admin, exec, *, *, allow
+      p, role:pmwp-admin, projects, *, *, allow
+      p, role:pmwp-admin, accounts, *, *, allow
+      
+      # Assign pmwp-admin role to pmwp user
+      g, pmwp, role:pmwp-admin
+
+# Redis configuration for airgap environment
+redis:
+  enabled: true
+  image:
+    repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/redis
+    tag: "7.2.8-alpine"
+    imagePullPolicy: IfNotPresent
+  auth:
+    enabled: false
+  resources:
+    limits:
+      memory: 256Mi
+      cpu: 200m
+    requests:
+      memory: 128Mi
+      cpu: 100m
