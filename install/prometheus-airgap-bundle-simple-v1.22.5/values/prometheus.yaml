@@ -91,7 +91,7 @@ alertmanager:
 # Grafana 설정
 grafana:
   image:
-    repository: grafana
+    repository: 866376286331.dkr.ecr.ap-northeast-2.amazonaws.com/grafana
     tag: 10.1.0
   adminPassword: admin123!
   initChownData:

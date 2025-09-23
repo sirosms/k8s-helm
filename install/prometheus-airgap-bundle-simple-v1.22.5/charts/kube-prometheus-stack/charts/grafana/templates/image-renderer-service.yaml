@@ -11,7 +11,7 @@ metadata:
     {{- end }}
   {{- with .Values.imageRenderer.service.annotations }}
   annotations:
-    {{- tpl (toYaml . | nindent 4) $ }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   type: ClusterIP
@@ -22,7 +22,7 @@ spec:
     - name: {{ .Values.imageRenderer.service.portName }}
       port: {{ .Values.imageRenderer.service.port }}
       protocol: TCP
-      targetPort: {{ .Values.imageRenderer.service.portName }}
+      targetPort: {{ .Values.imageRenderer.service.targetPort }}
       {{- with .Values.imageRenderer.appProtocol }}
       appProtocol: {{ . }}
       {{- end }}

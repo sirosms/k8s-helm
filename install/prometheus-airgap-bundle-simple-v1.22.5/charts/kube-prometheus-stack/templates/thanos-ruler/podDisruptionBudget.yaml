@@ -1,5 +1,5 @@
 {{- if and .Values.thanosRuler.enabled .Values.thanosRuler.podDisruptionBudget.enabled }}
-apiVersion: policy/v1
+apiVersion: {{ include "kube-prometheus-stack.pdb.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ template "kube-prometheus-stack.thanosRuler.name" . }}
@@ -17,5 +17,5 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: thanos-ruler
-      thanos-ruler: {{ template "kube-prometheus-stack.thanosRuler.crname" . }}
+      thanos-ruler: {{ template "kube-prometheus-stack.thanosRuler.name" . }}
 {{- end }}

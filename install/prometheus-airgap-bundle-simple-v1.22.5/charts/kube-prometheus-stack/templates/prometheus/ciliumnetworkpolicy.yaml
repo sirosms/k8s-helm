@@ -13,7 +13,8 @@ spec:
     {{- toYaml .Values.prometheus.networkPolicy.cilium.endpointSelector | nindent 4 }}
     {{- else }}
     matchExpressions:
-{{- include "kube-prometheus-stack.prometheus.pod-anti-affinity.matchExpressions" . | indent 6 }}
+      - {key: app.kubernetes.io/name, operator: In, values: [prometheus]}
+      - {key: prometheus, operator: In, values: [{{ template "kube-prometheus-stack.prometheus.crname" . }}]}
     {{- end }}
   {{- if and .Values.prometheus.networkPolicy.cilium .Values.prometheus.networkPolicy.cilium.egress }}  
   egress:
