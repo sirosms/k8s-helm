@@ -11,12 +11,23 @@ prometheusOperator:
       enabled: false
       podDisruptionBudget:
         enabled: false
+      serviceAccount:
+        create: false
     patch:
       enabled: false
     certManager:
       enabled: false
   # TLS Secret 관련 설정 비활성화 (폐쇄망 환경)
   tls:
+    enabled: false
+  # 네트워크 정책 비활성화
+  networkPolicy:
+    enabled: false
+  # 서비스 모니터 비활성화
+  serviceMonitor:
+    enabled: false
+  # Pod Security Policy 비활성화
+  podSecurityPolicy:
     enabled: false
   image:
     repository: prometheus-operator
@@ -27,11 +38,9 @@ prometheusOperator:
       tag: v0.67.1
   # Kubelet 설정 수정 (v0.67.1 호환)
   kubeletService:
-    enabled: true
+    enabled: false
     namespace: kube-system
     name: prometheus-kube-prometheus-kubelet
-  serviceMonitor:
-    interval: ""
 
 # Prometheus 서버 설정
 prometheus:
@@ -137,3 +146,45 @@ kube-state-metrics:
     tag: v2.10.0
   podSecurityPolicy:
     enabled: false
+
+# Upgrade Job 설정
+upgradeJob:
+  enabled: false
+  serviceAccount:
+    create: false
+
+# 전역 호환성 설정
+commonLabels: {}
+namespaceOverride: ""
+fullnameOverride: ""
+cleanPrometheusOperatorObjectNames: false
+
+# 보안 관련 설정 비활성화
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: false
+    configReloaders: true
+    general: true
+    k8s: true
+    kubeApiserverAvailability: false
+    kubeApiserverBurnrate: false
+    kubeApiserverHistogram: false
+    kubeApiserverSlos: false
+    kubelet: true
+    kubeProxy: false
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeScheduler: false
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true
