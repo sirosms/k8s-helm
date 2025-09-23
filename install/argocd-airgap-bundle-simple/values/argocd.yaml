@@ -123,6 +123,33 @@ tolerations: []
 # Affinity
 affinity: {}
 
+# ArgoCD Configuration (ConfigMap)
+configs:
+  cm:
+    # Add custom users
+    accounts.pmwp: apiKey, login
+    accounts.pmwp.enabled: "true"
+    
+    # RBAC Configuration
+  rbac:
+    # Default policy
+    policy.default: role:readonly
+    
+    # Custom RBAC policies
+    policy.csv: |
+      # Admin role for pmwp user
+      p, role:pmwp-admin, applications, *, */*, allow
+      p, role:pmwp-admin, certificates, *, *, allow
+      p, role:pmwp-admin, clusters, *, *, allow
+      p, role:pmwp-admin, repositories, *, *, allow
+      p, role:pmwp-admin, logs, *, *, allow
+      p, role:pmwp-admin, exec, *, *, allow
+      p, role:pmwp-admin, projects, *, *, allow
+      p, role:pmwp-admin, accounts, *, *, allow
+      
+      # Assign pmwp-admin role to pmwp user
+      g, pmwp, role:pmwp-admin
+
 # Redis configuration for airgap environment
 redis:
   enabled: true
