@@ -58,8 +58,6 @@ hostAliases:
 #     - devops.cluster.io
 
 readinessProbe:
-  enabled: true
-  type: httpGet
   httpGet:
     path: /-/readiness
     port: 443
@@ -71,8 +69,6 @@ readinessProbe:
   successThreshold: 1
 
 livenessProbe:
-  enabled: true
-  type: httpGet
   httpGet:
     path: /-/liveness
     port: 443
