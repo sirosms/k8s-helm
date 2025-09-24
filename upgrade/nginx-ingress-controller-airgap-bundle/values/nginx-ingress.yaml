@@ -14,8 +14,8 @@ controller:
     pullPolicy: IfNotPresent
   
   # Image pull secrets for ECR access
-  imagePullSecrets:
-    - name: ecr-secret
+  # imagePullSecrets:
+  #   - name: ecr-secret
   
   # Service configuration with NLB
   service:
@@ -40,7 +40,7 @@ controller:
     #   enabled: false
     #   image:
     #     registry: your-local-registry.com
-    #     image: ingress-nginx/kube-webhook-certgㅍen
+    #     image: ingress-nginx/kube-webhook-certgen
     #     tag: "v1.1.1"
     #     pullPolicy: IfNotPresent
   
