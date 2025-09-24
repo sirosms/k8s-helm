@@ -152,6 +152,7 @@ upgradeJob:
   enabled: false
   serviceAccount:
     create: false
+    enabled: false
 
 # 전역 호환성 설정
 commonLabels: {}
