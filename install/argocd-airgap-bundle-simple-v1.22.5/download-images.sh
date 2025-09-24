@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ArgoCD Airgap Bundle Image Download Script
-# Version: ArgoCD v3.1.3 (Chart 8.3.4)
+# Version: ArgoCD v2.8.15 (Chart 5.46.8) - K8s 1.22.5 Compatible
 
 set -e
 
@@ -11,11 +11,11 @@ IMAGES_DIR="${SCRIPT_DIR}/images"
 # Create images directory
 mkdir -p "$IMAGES_DIR"
 
-# ArgoCD Images
+# ArgoCD Images (v2.8.15 compatible)
 ARGOCD_IMAGES=(
-    "quay.io/argoproj/argocd:v3.1.3"
-    "redis:7.2.8-alpine"
-    "ghcr.io/dexidp/dex:v2.44.0"
+    "quay.io/argoproj/argocd:v2.8.15"
+    "redis:7.0.15-alpine"
+    "ghcr.io/dexidp/dex:v2.37.0"
 )
 
 echo "🔄 Downloading ArgoCD images for airgap deployment..."

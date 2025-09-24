@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # ArgoCD Airgap Bundle Installation Script
-# Version: ArgoCD v3.1.3 (Chart 8.3.4)
+# Version: ArgoCD v2.8.15 (Chart 5.46.8) - K8s 1.22.5 Compatible
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NAMESPACE="devops-argocd"
 RELEASE_NAME="argocd"
-CHART_VERSION="8.3.4"
+CHART_VERSION="5.46.8"
 GITLAB_EXTERNAL_URL="argocd-dev.secl.samsung.co.kr"
 
 # Configuration
