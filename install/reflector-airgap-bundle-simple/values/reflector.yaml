@@ -13,12 +13,11 @@ resources:
     cpu: 100m
     memory: 128Mi
 
-# Security context - relaxed for .NET Core compatibility
+# Security context
 securityContext:
   runAsNonRoot: false
   runAsUser: 0
   readOnlyRootFilesystem: false
-  allowPrivilegeEscalation: false
 
 # Node selector for specific nodes if needed
 nodeSelector: {}
@@ -39,9 +38,9 @@ serviceAccount:
 rbac:
   create: true
 
-# Pod security context - relaxed for .NET Core compatibility
+# Pod security context
 podSecurityContext:
-  runAsNonRoot: false
+  fsGroup: 0
 
 # Additional labels
 labels: {}
